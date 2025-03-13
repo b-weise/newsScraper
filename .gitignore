@@ -1,0 +1,9 @@
+.idea
+.ipynb_checkpoints
+.nix-shell-inputs
+__pycache__
+requirements.txt
+shell.nix
+storage
+*.swp
+.venv
