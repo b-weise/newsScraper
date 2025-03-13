@@ -1,0 +1,2 @@
+class WebsiteHandler:
+    pass
