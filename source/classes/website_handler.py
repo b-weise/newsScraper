@@ -1,2 +1,4 @@
 class WebsiteHandler:
-    pass
+
+    def destroy(self):
+        pass
