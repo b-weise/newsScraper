@@ -1,4 +1,5 @@
 from playwright.async_api import async_playwright, APIResponse
+import re
 
 
 class WebsiteHandler:
@@ -17,6 +18,22 @@ class WebsiteHandler:
     async def request_get(self, url: str) -> APIResponse:
         response = await self.api_request_context.get(url)
         return response
+
+    @staticmethod
+    def parse_robots_file(robots_content: str) -> dict[str, list[str]]:
+        allow_key = 'allow'
+        disallow_key = 'disallow'
+        parsed_content = {
+            f'{allow_key}': [],
+            f'{disallow_key}': [],
+        }
+        for line in robots_content.split('\n'):
+            line = line.strip()
+            for keyword in [allow_key, disallow_key]:
+                if re.match(f'^{keyword}', line, flags=re.I) is not None:
+                    line_pieces = re.split(r'\s+', line)
+                    parsed_content[keyword] += line_pieces[1:]
+        return parsed_content
 
     async def destroy(self):
         if self.page is not None:
