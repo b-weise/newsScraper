@@ -25,5 +25,5 @@ async def test_initialized_playwright_success(initialized_playwright: WebsiteHan
     assert isinstance(initialized_playwright, WebsiteHandler)
 
 
-async def test_page(initialized_playwright: WebsiteHandler):
+async def test_page_success(initialized_playwright: WebsiteHandler):
     assert isinstance(initialized_playwright.page, Page)
