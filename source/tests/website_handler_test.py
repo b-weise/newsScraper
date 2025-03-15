@@ -76,18 +76,31 @@ Disallow: /apps/talk
 Disallow: /apps/zar
 """, {'allow': [], 'disallow': ['/logout-user?redirect=*', '/349353471/', '/admin/', '/andytow/', '/apps/talk',
                                 '/apps/zar']}),
-    pytest.param('Disallow: /logout-user?redirect=* /349353471/ /admin/ /andytow/ /apps/talk /apps/zar',
+    pytest.param("""
+    User-agent: Googlebot *
+    Disallow: /logout-user?redirect=* /349353471/ /admin/ /andytow/ /apps/talk /apps/zar
+    """,
                  {'allow': [], 'disallow': ['/logout-user?redirect=*', '/349353471/', '/admin/', '/andytow/',
                                             '/apps/talk', '/apps/zar']}),
     pytest.param("""
+    User-agent: *
     Disallow: /logout-user?redirect=*
     Allow: /349353471/
     """, {'allow': ['/349353471/'], 'disallow': ['/logout-user?redirect=*']}),
     pytest.param("""
+    USER-AGENT: *
     Disallowed: /logout-user?redirect=*
     Allowed: /349353471/
+    
+    User-agent: Googlebot
+    Disallowed: /admin/
+    Allowed: /andytow/
     """, {'allow': ['/349353471/'], 'disallow': ['/logout-user?redirect=*']}),
     pytest.param("""
+    User-agent: Googlebot
+    Disallowed: /admin/
+    Allowed: /andytow/
+    user-agent: *
     disallowed: /logout-user?redirect=*
     allowed: /349353471/
     """, {'allow': ['/349353471/'], 'disallow': ['/logout-user?redirect=*']}),
