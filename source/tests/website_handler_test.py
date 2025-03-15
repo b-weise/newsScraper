@@ -1,5 +1,5 @@
-from typing import Optional
 from collections.abc import Iterable
+from typing import Optional
 
 import pytest
 from playwright.async_api import Page
@@ -108,3 +108,21 @@ Disallow: /apps/zar
 async def test_parse_robots_file_success(new_instance, input_content: str, expected_output: dict[str, Iterable[str]]):
     parsed_content = new_instance.parse_robots_file(input_content)
     assert parsed_content == expected_output
+
+
+@pytest.mark.parametrize('parsed_robots,input_url,expected_output', [
+    pytest.param({'allow': [], 'disallow': []}, 'https://www.pagina12.com.ar/', True),
+    pytest.param({'allow': ['/'], 'disallow': []}, 'https://www.pagina12.com.ar/', True),
+    pytest.param({'allow': [], 'disallow': ['/']}, 'https://www.pagina12.com.ar/', False),
+    pytest.param({'allow': ['/test/'], 'disallow': ['/']}, 'https://www.pagina12.com.ar/test/', True),
+    pytest.param({'allow': ['/'], 'disallow': ['/test/']}, 'https://www.pagina12.com.ar/test/', False),
+    pytest.param({'allow': ['/*/'], 'disallow': ['/']}, 'https://www.pagina12.com.ar/test/', True),
+    pytest.param({'allow': ['/*/*/'], 'disallow': ['/*/']}, 'https://www.pagina12.com.ar/test/', False),
+    pytest.param({'allow': ['/*/*/'], 'disallow': ['/*/']}, 'https://www.pagina12.com.ar/test/ing/', True),
+])
+async def test_ensure_compliant_url_success(new_instance,
+                                            parsed_robots: dict[str, list[str]],
+                                            input_url: str,
+                                            expected_output: bool):
+    is_compliant = new_instance.ensure_compliant_url(parsed_robots, input_url)
+    assert is_compliant == expected_output

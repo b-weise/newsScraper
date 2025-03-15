@@ -1,5 +1,8 @@
-from playwright.async_api import async_playwright, APIResponse
 import re
+from pathlib import Path
+from urllib.parse import urlparse
+
+from playwright.async_api import async_playwright, APIResponse
 
 
 class WebsiteHandler:
@@ -59,6 +62,20 @@ class WebsiteHandler:
             if was_relevant_useragent_already_extracted and not is_relevant_useragent_space:
                 break
         return parsed_content
+
+    def ensure_compliant_url(self, parsed_robots: dict[str, list[str]], url: str) -> bool:
+        # criteria based on: https://developers.google.com/search/docs/crawling-indexing/robots/create-robots-txt
+        allowed_paths = parsed_robots[self.robots_allow_key]
+        disallowed_paths = parsed_robots[self.robots_disallow_key]
+        url_path = urlparse(url).path
+        all_paths = allowed_paths + disallowed_paths
+        all_paths_sorted = sorted(all_paths,
+                                  key=lambda path: len(Path(path).resolve().parents))  # Sorted by specificity
+        is_compliant = True
+        for path in all_paths_sorted:
+            if Path(url_path).match(path):
+                is_compliant = path in allowed_paths
+        return is_compliant
 
     async def destroy(self):
         if self.page is not None:
