@@ -120,9 +120,9 @@ async def test_parse_robots_file_success(new_instance, input_content: str, expec
     pytest.param('https://www.pagina12.com.ar/test/', {'allow': ['/*/*/'], 'disallow': ['/*/']}, False),
     pytest.param('https://www.pagina12.com.ar/test/ing/', {'allow': ['/*/*/'], 'disallow': ['/*/']}, True),
 ])
-async def test_ensure_compliant_url_success(new_instance,
-                                            input_url: str,
-                                            parsed_robots: dict[str, list[str]],
-                                            expected_output: bool):
-    is_compliant = new_instance.ensure_compliant_url(input_url, parsed_robots)
+async def test_is_compliant_url_success(new_instance,
+                                        input_url: str,
+                                        parsed_robots: dict[str, list[str]],
+                                        expected_output: bool):
+    is_compliant = new_instance.is_compliant_url(input_url, parsed_robots)
     assert is_compliant == expected_output

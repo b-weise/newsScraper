@@ -63,7 +63,7 @@ class WebsiteHandler:
                 break
         return parsed_content
 
-    def ensure_compliant_url(self, url: str, parsed_robots: dict[str, list[str]]) -> bool:
+    def is_compliant_url(self, url: str, parsed_robots: dict[str, list[str]]) -> bool:
         # criteria based on: https://developers.google.com/search/docs/crawling-indexing/robots/create-robots-txt
         allowed_paths = parsed_robots[self.robots_allow_key]
         disallowed_paths = parsed_robots[self.robots_disallow_key]
