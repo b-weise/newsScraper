@@ -3,8 +3,14 @@ import re
 
 
 class WebsiteHandler:
-    def __init__(self, headless: bool = True):
+    def __init__(self,
+                 headless: bool = True,
+                 robots_allow_key: str = 'allow',
+                 robots_disallow_key: str = 'disallow',
+                 ):
         self.headless = headless
+        self.robots_allow_key = robots_allow_key
+        self.robots_disallow_key = robots_disallow_key
         self.page = None
         self.api_request_context = None
 
@@ -19,10 +25,9 @@ class WebsiteHandler:
         response = await self.api_request_context.get(url)
         return response
 
-    @staticmethod
-    def parse_robots_file(robots_content: str) -> dict[str, list[str]]:
-        allow_key = 'allow'
-        disallow_key = 'disallow'
+    def parse_robots_file(self, robots_content: str) -> dict[str, list[str]]:
+        allow_key = self.robots_allow_key
+        disallow_key = self.robots_disallow_key
         parsed_content = {
             f'{allow_key}': [],
             f'{disallow_key}': [],
