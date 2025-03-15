@@ -6,6 +6,10 @@ from urllib.parse import urlparse
 from playwright.async_api import async_playwright, APIResponse
 
 
+class NonCompliantURL(Exception):
+    pass
+
+
 class WebsiteHandler:
     def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
                  robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow'):
@@ -76,6 +80,11 @@ class WebsiteHandler:
             if fnmatch.fnmatch(url_path, path_pattern):
                 is_compliant = path in allowed_paths
         return is_compliant
+
+    async def safe_goto(self, url: str, parsed_robots: dict[str, list[str]]):
+        if not self.is_compliant_url(url, parsed_robots):
+            raise NonCompliantURL(f'The URL "{url}" is disallowed by robots.txt rules.')
+        await self.page.goto(url)
 
     async def destroy(self):
         if self.page is not None:

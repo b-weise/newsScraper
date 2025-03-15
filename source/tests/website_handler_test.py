@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 from playwright.async_api import Page
 
-from source.classes.website_handler import WebsiteHandler
+from source.classes.website_handler import WebsiteHandler, NonCompliantURL
 
 
 @pytest.fixture
@@ -144,3 +144,47 @@ async def test_is_compliant_url_success(new_instance, input_url: str, parsed_rob
                                         expected_output: bool):
     is_compliant = new_instance.is_compliant_url(input_url, parsed_robots)
     assert is_compliant == expected_output
+
+
+@pytest.mark.parametrize('input_url,parsed_robots', [
+    pytest.param('https://www.pagina12.com.ar/', {'allow': [], 'disallow': []}),
+    pytest.param('https://www.pagina12.com.ar/', {'allow': ['/'], 'disallow': []}),
+    pytest.param('https://www.pagina12.com.ar/', {'allow': [], 'disallow': ['/*/']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', {'allow': [], 'disallow': ['/*/']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', {'allow': ['/'], 'disallow': ['/*/']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas',
+                 {'allow': ['/800250-genealogistas'], 'disallow': ['/']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/*/'], 'disallow': ['/']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/secciones/'], 'disallow': ['/']}),
+])
+async def test_safe_goto_success(new_initialized_instance: WebsiteHandler, input_url: str,
+                                 parsed_robots: dict[str, list[str]]):
+    await new_initialized_instance.safe_goto(input_url, parsed_robots)
+    assert new_initialized_instance.page.url == input_url
+
+
+@pytest.mark.parametrize('input_url,parsed_robots', [
+    pytest.param('https://www.pagina12.com.ar/', {'allow': [], 'disallow': ['/']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', {'allow': [], 'disallow': ['/']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas',
+                 {'allow': ['/'], 'disallow': ['/800250-genealogistas']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', {'allow': ['/*/'], 'disallow': ['/']}),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas',
+                 {'allow': ['/800250-genealogistas/'], 'disallow': ['/800250-genealogistas']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/'], 'disallow': ['/*/']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/'], 'disallow': ['/secciones/']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/'], 'disallow': ['/*/*']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/'], 'disallow': ['/*/el-pais']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais',
+                 {'allow': ['/'], 'disallow': ['/secciones/el-pais']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais',
+                 {'allow': ['/*/'], 'disallow': ['/secciones/']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais',
+                 {'allow': ['/*/'], 'disallow': ['/*/el-pais']}),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais',
+                 {'allow': ['/*/'], 'disallow': ['/secciones/el-pais']}),
+])
+async def test_safe_goto_failure(new_initialized_instance: WebsiteHandler, input_url: str,
+                                 parsed_robots: dict[str, list[str]]):
+    with pytest.raises(NonCompliantURL):
+        await new_initialized_instance.safe_goto(input_url, parsed_robots)
