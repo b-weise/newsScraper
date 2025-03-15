@@ -6,12 +6,8 @@ from playwright.async_api import async_playwright, APIResponse
 
 
 class WebsiteHandler:
-    def __init__(self,
-                 headless: bool = True,
-                 robots_useragent_key: str = 'user-agent',
-                 robots_allow_key: str = 'allow',
-                 robots_disallow_key: str = 'disallow',
-                 ):
+    def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
+                 robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow'):
         self.headless = headless
         self.robots_useragent_key = robots_useragent_key
         self.robots_allow_key = robots_allow_key
@@ -73,7 +69,7 @@ class WebsiteHandler:
                                   key=lambda path: len(Path(path).resolve().parents))  # Sorted by specificity
         is_compliant = True
         for path in all_paths_sorted:
-            if Path(url_path).match(path):
+            if url_path.startswith(path) or Path(url_path).match(path):
                 is_compliant = path in allowed_paths
         return is_compliant
 
