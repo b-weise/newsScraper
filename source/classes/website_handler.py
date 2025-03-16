@@ -10,6 +10,10 @@ class NonCompliantURL(Exception):
     pass
 
 
+class UninitializedPlaywright(Exception):
+    pass
+
+
 class WebsiteHandler:
     def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
                  robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow'):
@@ -17,7 +21,7 @@ class WebsiteHandler:
         self.robots_useragent_key = robots_useragent_key
         self.robots_allow_key = robots_allow_key
         self.robots_disallow_key = robots_disallow_key
-        self.page = None
+        self.__page = None
         self.api_request_context = None
 
     async def initialize_playwright(self):
@@ -25,9 +29,19 @@ class WebsiteHandler:
         browser = playwright.chromium
         browser_context = await browser.launch_persistent_context('', headless=self.headless)
         self.api_request_context = browser_context.request
-        self.page = browser_context.pages[0]
+        self.__page = browser_context.pages[0]
+
+    def __check_playwright_instance(self):
+        if self.__page is None:
+            raise UninitializedPlaywright('Playwright is not initialized. Call the "initialize_playwright" method first.')
+
+    @property
+    def page(self):
+        self.__check_playwright_instance()
+        return self.__page
 
     async def request_get(self, url: str) -> APIResponse:
+        self.__check_playwright_instance()
         response = await self.api_request_context.get(url)
         return response
 
@@ -82,9 +96,10 @@ class WebsiteHandler:
         return is_compliant
 
     async def safe_goto(self, url: str, parsed_robots: dict[str, list[str]]):
+        self.__check_playwright_instance()
         if not self.is_compliant_url(url, parsed_robots):
             raise NonCompliantURL(f'The URL "{url}" is disallowed by robots.txt rules.')
-        await self.page.goto(url)
+        await self.__page.goto(url)
 
     async def destroy(self):
         if self.page is not None:
