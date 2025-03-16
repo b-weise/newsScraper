@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Optional, Type
+from typing import Optional
 
 import pytest
 from playwright.async_api import Page
@@ -203,6 +203,40 @@ async def test_safe_goto_call_failure(new_instance: WebsiteHandler, input_url: s
         await new_instance.safe_goto(input_url, parsed_robots)
 
 
-async def test_get_common_useragent_success(new_initialized_instance: WebsiteHandler):
+pytest.common_useragent_tests_storage = {
+    'cycles': 6,
+    'test_useragents': [],
+    'current_common_useragents': [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.1",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.",
+        "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.",
+        "Mozilla/5.0 (Windows NT 6.1; rv:109.0) Gecko/20100101 Firefox/115.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 OPR/116.0.0.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.3",
+        "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 OPR/95.0.0.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.3"],
+}
+
+
+@pytest.mark.parametrize('tests_counter', range(pytest.common_useragent_tests_storage['cycles']))
+async def test_get_common_useragent_success(new_initialized_instance: WebsiteHandler, tests_counter: int):
     useragent = await new_initialized_instance.get_common_useragent()
-    assert useragent == 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3'
+    assert useragent in pytest.common_useragent_tests_storage['current_common_useragents']
+    pytest.common_useragent_tests_storage['test_useragents'].append(useragent)
+    if (len(pytest.common_useragent_tests_storage['test_useragents'])
+            == pytest.common_useragent_tests_storage['cycles']):
+        sorted_stored_useragents = sorted(pytest.common_useragent_tests_storage['test_useragents'])
+        assert sorted_stored_useragents[0] != sorted_stored_useragents[-1]
+
+
+async def test_get_common_useragent_failure(new_instance: WebsiteHandler):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.get_common_useragent()

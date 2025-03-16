@@ -1,5 +1,6 @@
 import fnmatch
 import json
+import random
 import re
 from pathlib import Path
 from urllib.parse import urlparse
@@ -17,13 +18,12 @@ class UninitializedPlaywright(Exception):
 
 class WebsiteHandler:
     def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
-                 robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow',
-                 common_useragents_url: str = 'https://www.useragents.me/'):
+                 robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow'):
         self.headless = headless
         self.robots_useragent_key = robots_useragent_key
         self.robots_allow_key = robots_allow_key
         self.robots_disallow_key = robots_disallow_key
-        self.common_useragents_url = common_useragents_url
+        self.common_useragents_url = 'https://www.useragents.me/'
         self.__page = None
         self.api_request_context = None
 
@@ -36,7 +36,8 @@ class WebsiteHandler:
 
     def __check_playwright_instance(self):
         if self.__page is None:
-            raise UninitializedPlaywright('Playwright is not initialized. Call the "initialize_playwright" method first.')
+            raise UninitializedPlaywright(
+                'Playwright is not initialized. Call the "initialize_playwright" method first.')
 
     @property
     def page(self):
@@ -105,13 +106,15 @@ class WebsiteHandler:
         await self.__page.goto(url)
 
     async def get_common_useragent(self) -> str:
+        self.__check_playwright_instance()
         await self.__page.goto(self.common_useragents_url)
         json_parent_div = self.__page.locator('#most-common-desktop-useragents-json-csv')
         json_div = json_parent_div.locator('div', has_text='JSON')
         json_textarea = json_div.locator('textarea')
         json_text = await json_textarea.input_value()
         parsed_json = json.loads(json_text)
-        return parsed_json[0]['ua']
+        random_useragent = random.choice(parsed_json)['ua']
+        return random_useragent
 
     async def destroy(self):
         if self.__page is not None:
