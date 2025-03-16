@@ -242,10 +242,20 @@ async def test_get_common_useragent_failure(new_instance: WebsiteHandler):
         await new_instance.get_common_useragent()
 
 
+async def test_get_current_useragent_success(new_initialized_instance: WebsiteHandler):
+    useragent = await new_initialized_instance.get_current_useragent()
+    assert useragent == 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/133.0.6943.16 Safari/537.36'
+
+
+async def test_get_current_useragent_failure(new_instance: WebsiteHandler):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.get_current_useragent()
+
+
 async def test_change_useragent_success(new_initialized_instance: WebsiteHandler):
-    original_useragent = await new_initialized_instance.page.evaluate('() => navigator.userAgent')
+    original_useragent = await new_initialized_instance.get_current_useragent()
     await new_initialized_instance.change_useragent()
-    new_useragent = await new_initialized_instance.page.evaluate('() => navigator.userAgent')
+    new_useragent = await new_initialized_instance.get_current_useragent()
     assert original_useragent != new_useragent
 
 

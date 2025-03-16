@@ -118,6 +118,11 @@ class WebsiteHandler:
         random_useragent = random.choice(parsed_json)['ua']
         return random_useragent
 
+    async def get_current_useragent(self):
+        self.__check_playwright_instance()
+        useragent = await self.__page.evaluate('() => navigator.userAgent')
+        return useragent
+
     async def change_useragent(self):
         new_useragent = await self.get_common_useragent()
         await self.initialize_playwright(user_agent=new_useragent)
