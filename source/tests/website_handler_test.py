@@ -50,9 +50,9 @@ Disallow: /apps/talk
 Disallow: /apps/zar
 """),
 ])
-async def test_request_get_success(new_initialized_instance: WebsiteHandler, request_url: str,
+async def test_get_request_success(new_initialized_instance: WebsiteHandler, request_url: str,
                                    response_body: Optional[str]):
-    response = await new_initialized_instance.request_get(request_url)
+    response = await new_initialized_instance.get_request(request_url)
     assert response.status == 200
     text = await response.text()
     assert text == response_body
@@ -61,9 +61,9 @@ async def test_request_get_success(new_initialized_instance: WebsiteHandler, req
 @pytest.mark.parametrize('request_url', [
     pytest.param('https://www.pagina12.com.ar/robots.txt'),
 ])
-async def test_request_get_failure(new_instance: WebsiteHandler, request_url: str):
+async def test_get_request_failure(new_instance: WebsiteHandler, request_url: str):
     with pytest.raises(UninitializedPlaywright):
-        await new_instance.request_get(request_url)
+        await new_instance.get_request(request_url)
 
 
 @pytest.mark.parametrize('input_content,expected_output', [

@@ -40,7 +40,7 @@ class WebsiteHandler:
         self.__check_playwright_instance()
         return self.__page
 
-    async def request_get(self, url: str) -> APIResponse:
+    async def get_request(self, url: str) -> APIResponse:
         self.__check_playwright_instance()
         response = await self.api_request_context.get(url)
         return response
