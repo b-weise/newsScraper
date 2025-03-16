@@ -1,10 +1,10 @@
 from collections.abc import Iterable
-from typing import Optional
+from typing import Optional, Type
 
 import pytest
 from playwright.async_api import Page
 
-from source.classes.website_handler import WebsiteHandler, NonCompliantURL
+from source.classes.website_handler import WebsiteHandler, NonCompliantURL, UninitializedPlaywright
 
 
 @pytest.fixture
@@ -28,6 +28,11 @@ async def test_page_success(new_initialized_instance: WebsiteHandler):
     assert isinstance(new_initialized_instance.page, Page)
 
 
+async def test_page_failure(new_instance: WebsiteHandler):
+    with pytest.raises(UninitializedPlaywright):
+        new_instance.page
+
+
 @pytest.mark.parametrize('request_url,response_status', [
     pytest.param('https://www.pagina12.com.ar/robots.txt', 200),
 ])
@@ -36,6 +41,14 @@ async def test_request_get_status_success(new_initialized_instance: WebsiteHandl
     response = await new_initialized_instance.request_get(request_url)
     status = response.status
     assert status == response_status
+
+
+@pytest.mark.parametrize('request_url', [
+    pytest.param('https://www.pagina12.com.ar/robots.txt'),
+])
+async def test_request_get_status_failure(new_instance: WebsiteHandler, request_url: str):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.request_get(request_url)
 
 
 @pytest.mark.parametrize('request_url,response_body', [
@@ -60,6 +73,14 @@ async def test_request_get_body_success(new_initialized_instance: WebsiteHandler
     response = await new_initialized_instance.request_get(request_url)
     text = await response.text()
     assert text == response_body
+
+
+@pytest.mark.parametrize('request_url', [
+    pytest.param('https://www.pagina12.com.ar/robots.txt'),
+])
+async def test_request_get_body_failure(new_instance: WebsiteHandler, request_url: str):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.request_get(request_url)
 
 
 @pytest.mark.parametrize('input_content,expected_output', [
@@ -188,3 +209,12 @@ async def test_safe_goto_failure(new_initialized_instance: WebsiteHandler, input
                                  parsed_robots: dict[str, list[str]]):
     with pytest.raises(NonCompliantURL):
         await new_initialized_instance.safe_goto(input_url, parsed_robots)
+
+
+@pytest.mark.parametrize('input_url,parsed_robots', [
+    pytest.param('https://www.pagina12.com.ar/', {'allow': [], 'disallow': ['/']}),
+])
+async def test_safe_goto_call_failure(new_instance: WebsiteHandler, input_url: str,
+                                      parsed_robots: dict[str, list[str]]):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.safe_goto(input_url, parsed_robots)
