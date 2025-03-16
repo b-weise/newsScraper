@@ -4,7 +4,7 @@ import random
 import re
 from pathlib import Path
 from typing import Optional
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from playwright.async_api import async_playwright, APIResponse
 
@@ -27,6 +27,7 @@ class WebsiteHandler:
         self.common_useragents_url = 'https://www.useragents.me/'
         self.__page = None
         self.__browser_context = None
+        self.__parsed_robots = None
 
     async def initialize_playwright(self, user_agent: Optional[str] = None):
         await self.destroy()
@@ -84,10 +85,11 @@ class WebsiteHandler:
                 break
         return parsed_content
 
-    def is_compliant_url(self, url: str, parsed_robots: dict[str, list[str]]) -> bool:
+    def is_compliant_url(self, url: str, parsed_robots: Optional[dict[str, list[str]]] = None) -> bool:
         # criteria based on: https://developers.google.com/search/docs/crawling-indexing/robots/create-robots-txt
-        allowed_paths = parsed_robots[self.robots_allow_key]
-        disallowed_paths = parsed_robots[self.robots_disallow_key]
+        parsed_robots = parsed_robots or {}
+        allowed_paths = parsed_robots.get(self.robots_allow_key, [])
+        disallowed_paths = parsed_robots.get(self.robots_disallow_key, [])
         url_path = urlparse(url).path
         all_paths = allowed_paths + disallowed_paths
         all_paths_sorted = sorted(all_paths,
@@ -101,7 +103,8 @@ class WebsiteHandler:
                 is_compliant = path in allowed_paths
         return is_compliant
 
-    async def safe_goto(self, url: str, parsed_robots: dict[str, list[str]]):
+    async def safe_goto(self, url: str, parsed_robots: Optional[dict[str, list[str]]] = None):
+        parsed_robots = parsed_robots or self.__parsed_robots
         self.__check_playwright_instance()
         if not self.is_compliant_url(url, parsed_robots):
             raise NonCompliantURL(f'The URL "{url}" is disallowed by robots.txt rules.')
@@ -130,6 +133,14 @@ class WebsiteHandler:
     async def initialize_random_useragent_context(self):
         await self.initialize_playwright()
         await self.change_useragent()
+
+    async def setup_robots_compliance(self, sample_url: str):
+        url_scheme, url_hostname, _, _, _, _ = list(urlparse(sample_url))
+        robots_url = urlunparse([url_scheme, url_hostname, '/robots.txt', '', '', ''])
+        robots_response = await self.get_request(robots_url)
+        robots_contents = await robots_response.text()
+        parsed_robots = self.parse_robots_file(robots_contents)
+        self.__parsed_robots = parsed_robots
 
     async def destroy(self):
         if self.__browser_context is not None:

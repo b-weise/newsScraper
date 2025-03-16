@@ -151,6 +151,7 @@ async def test_is_compliant_url_success(new_instance, input_url: str, parsed_rob
 
 
 @pytest.mark.parametrize('input_url,parsed_robots', [
+    pytest.param('https://www.pagina12.com.ar/', None),
     pytest.param('https://www.pagina12.com.ar/', {'allow': [], 'disallow': []}),
     pytest.param('https://www.pagina12.com.ar/', {'allow': ['/'], 'disallow': []}),
     pytest.param('https://www.pagina12.com.ar/', {'allow': [], 'disallow': ['/*/']}),
@@ -162,7 +163,7 @@ async def test_is_compliant_url_success(new_instance, input_url: str, parsed_rob
     pytest.param('https://www.pagina12.com.ar/secciones/el-pais', {'allow': ['/secciones/'], 'disallow': ['/']}),
 ])
 async def test_safe_goto_success(new_initialized_instance: WebsiteHandler, input_url: str,
-                                 parsed_robots: dict[str, list[str]]):
+                                 parsed_robots: Optional[dict[str, list[str]]]):
     await new_initialized_instance.safe_goto(input_url, parsed_robots)
     assert new_initialized_instance.page.url == input_url
 
@@ -276,3 +277,28 @@ async def test_initialize_random_useragent_context_success(new_instance: Website
         pytest.common_useragent_tests_storage['test_useragents'] = []
         assert sorted_stored_useragents[0] != sorted_stored_useragents[-1]
 
+
+@pytest.mark.parametrize('sample_url', [
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas'),
+    pytest.param('https://www.pagina12.com.ar/secciones/el-pais'),
+])
+async def test_setup_robots_compliance_success(new_initialized_instance: WebsiteHandler, sample_url: str):
+    await new_initialized_instance.setup_robots_compliance(sample_url)
+    await new_initialized_instance.safe_goto(sample_url)
+
+
+@pytest.mark.parametrize('sample_url', [
+    pytest.param('https://www.pagina12.com.ar/349353471/'),
+    pytest.param('https://www.pagina12.com.ar/349353471/test'),
+    pytest.param('https://www.pagina12.com.ar/andytow/'),
+    pytest.param('https://www.pagina12.com.ar/andytow/test'),
+])
+async def test_setup_robots_compliance_failure(new_initialized_instance: WebsiteHandler, sample_url: str):
+    with pytest.raises(NonCompliantURL):
+        await new_initialized_instance.setup_robots_compliance(sample_url)
+        await new_initialized_instance.safe_goto(sample_url)
+
+
+async def test_setup_robots_compliance_call_failure(new_instance: WebsiteHandler):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.setup_robots_compliance('https://www.pagina12.com.ar/800250-genealogistas')
