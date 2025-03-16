@@ -33,24 +33,6 @@ async def test_page_failure(new_instance: WebsiteHandler):
         new_instance.page
 
 
-@pytest.mark.parametrize('request_url,response_status', [
-    pytest.param('https://www.pagina12.com.ar/robots.txt', 200),
-])
-async def test_request_get_status_success(new_initialized_instance: WebsiteHandler, request_url: str,
-                                          response_status: int):
-    response = await new_initialized_instance.request_get(request_url)
-    status = response.status
-    assert status == response_status
-
-
-@pytest.mark.parametrize('request_url', [
-    pytest.param('https://www.pagina12.com.ar/robots.txt'),
-])
-async def test_request_get_status_failure(new_instance: WebsiteHandler, request_url: str):
-    with pytest.raises(UninitializedPlaywright):
-        await new_instance.request_get(request_url)
-
-
 @pytest.mark.parametrize('request_url,response_body', [
     pytest.param('https://www.pagina12.com.ar/robots.txt', """\
 # robots.txt for https://www.pagina12.com.ar/
@@ -68,9 +50,10 @@ Disallow: /apps/talk
 Disallow: /apps/zar
 """),
 ])
-async def test_request_get_body_success(new_initialized_instance: WebsiteHandler, request_url: str,
-                                        response_body: Optional[str]):
+async def test_request_get_success(new_initialized_instance: WebsiteHandler, request_url: str,
+                                   response_body: Optional[str]):
     response = await new_initialized_instance.request_get(request_url)
+    assert response.status == 200
     text = await response.text()
     assert text == response_body
 
@@ -78,7 +61,7 @@ async def test_request_get_body_success(new_initialized_instance: WebsiteHandler
 @pytest.mark.parametrize('request_url', [
     pytest.param('https://www.pagina12.com.ar/robots.txt'),
 ])
-async def test_request_get_body_failure(new_instance: WebsiteHandler, request_url: str):
+async def test_request_get_failure(new_instance: WebsiteHandler, request_url: str):
     with pytest.raises(UninitializedPlaywright):
         await new_instance.request_get(request_url)
 
