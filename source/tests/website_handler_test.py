@@ -240,3 +240,15 @@ async def test_get_common_useragent_success(new_initialized_instance: WebsiteHan
 async def test_get_common_useragent_failure(new_instance: WebsiteHandler):
     with pytest.raises(UninitializedPlaywright):
         await new_instance.get_common_useragent()
+
+
+async def test_change_useragent_success(new_initialized_instance: WebsiteHandler):
+    original_useragent = await new_initialized_instance.page.evaluate('() => navigator.userAgent')
+    await new_initialized_instance.change_useragent()
+    new_useragent = await new_initialized_instance.page.evaluate('() => navigator.userAgent')
+    assert original_useragent != new_useragent
+
+
+async def test_change_useragent_failure(new_instance: WebsiteHandler):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.change_useragent()
