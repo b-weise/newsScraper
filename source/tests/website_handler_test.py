@@ -234,6 +234,7 @@ async def test_get_common_useragent_success(new_initialized_instance: WebsiteHan
     if (len(pytest.common_useragent_tests_storage['test_useragents'])
             == pytest.common_useragent_tests_storage['cycles']):
         sorted_stored_useragents = sorted(pytest.common_useragent_tests_storage['test_useragents'])
+        pytest.common_useragent_tests_storage['test_useragents'] = []
         assert sorted_stored_useragents[0] != sorted_stored_useragents[-1]
 
 
@@ -262,3 +263,16 @@ async def test_change_useragent_success(new_initialized_instance: WebsiteHandler
 async def test_change_useragent_failure(new_instance: WebsiteHandler):
     with pytest.raises(UninitializedPlaywright):
         await new_instance.change_useragent()
+
+
+@pytest.mark.parametrize('tests_counter', range(pytest.common_useragent_tests_storage['cycles']))
+async def test_initialize_random_useragent_context_success(new_instance: WebsiteHandler, tests_counter: int):
+    await new_instance.initialize_random_useragent_context()
+    useragent = await new_instance.get_current_useragent()
+    pytest.common_useragent_tests_storage['test_useragents'].append(useragent)
+    if (len(pytest.common_useragent_tests_storage['test_useragents'])
+            == pytest.common_useragent_tests_storage['cycles']):
+        sorted_stored_useragents = sorted(pytest.common_useragent_tests_storage['test_useragents'])
+        pytest.common_useragent_tests_storage['test_useragents'] = []
+        assert sorted_stored_useragents[0] != sorted_stored_useragents[-1]
+

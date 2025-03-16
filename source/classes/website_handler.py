@@ -127,6 +127,10 @@ class WebsiteHandler:
         new_useragent = await self.get_common_useragent()
         await self.initialize_playwright(user_agent=new_useragent)
 
+    async def initialize_random_useragent_context(self):
+        await self.initialize_playwright()
+        await self.change_useragent()
+
     async def destroy(self):
         if self.__browser_context is not None:
             await self.__browser_context.close()
