@@ -201,3 +201,8 @@ async def test_safe_goto_call_failure(new_instance: WebsiteHandler, input_url: s
                                       parsed_robots: dict[str, list[str]]):
     with pytest.raises(UninitializedPlaywright):
         await new_instance.safe_goto(input_url, parsed_robots)
+
+
+async def test_get_common_useragent_success(new_initialized_instance: WebsiteHandler):
+    useragent = await new_initialized_instance.get_common_useragent()
+    assert useragent == 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3'
