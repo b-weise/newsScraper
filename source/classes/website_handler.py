@@ -3,6 +3,7 @@ import json
 import random
 import re
 from pathlib import Path
+from typing import Optional
 from urllib.parse import urlparse
 
 from playwright.async_api import async_playwright, APIResponse
@@ -25,17 +26,18 @@ class WebsiteHandler:
         self.robots_disallow_key = robots_disallow_key
         self.common_useragents_url = 'https://www.useragents.me/'
         self.__page = None
-        self.api_request_context = None
+        self.__browser_context = None
 
-    async def initialize_playwright(self):
+    async def initialize_playwright(self, user_agent: Optional[str] = None):
+        await self.destroy()
         playwright = await async_playwright().start()
         browser = playwright.chromium
-        browser_context = await browser.launch_persistent_context('', headless=self.headless)
-        self.api_request_context = browser_context.request
-        self.__page = browser_context.pages[0]
+        self.__browser_context = await browser.launch_persistent_context('', headless=self.headless,
+                                                                         user_agent=user_agent)
+        self.__page = self.__browser_context.pages[0]
 
     def __check_playwright_instance(self):
-        if self.__page is None:
+        if self.__browser_context is None:
             raise UninitializedPlaywright(
                 'Playwright is not initialized. Call the "initialize_playwright" method first.')
 
@@ -46,7 +48,7 @@ class WebsiteHandler:
 
     async def get_request(self, url: str) -> APIResponse:
         self.__check_playwright_instance()
-        response = await self.api_request_context.get(url)
+        response = await self.__browser_context.request.get(url)
         return response
 
     def parse_robots_file(self, robots_content: str) -> dict[str, list[str]]:
@@ -116,7 +118,12 @@ class WebsiteHandler:
         random_useragent = random.choice(parsed_json)['ua']
         return random_useragent
 
+    async def change_useragent(self):
+        new_useragent = await self.get_common_useragent()
+        await self.initialize_playwright(user_agent=new_useragent)
+
     async def destroy(self):
-        if self.__page is not None:
-            await self.__page.close()
+        if self.__browser_context is not None:
+            await self.__browser_context.close()
             self.__page = None
+            self.__browser_context = None
