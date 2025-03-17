@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import re
 from typing import Optional
 
@@ -46,6 +47,32 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         sanitized_text_block = solid_text_block.replace(u"\u00A0", ' ')  # Replace non-breaking spaces
         trimmed_text_block = sanitized_text_block.strip()
         return trimmed_text_block
+
+    async def _gather_results(self, results_urls: list[str]) -> list[dict[str, str]]:
+        results = []
+        pages = []
+
+        async def build_result(article_url):
+            result = {'article_url': article_url}
+            new_page = await self._wshandler.get_new_page(article_url)
+
+            async def store_result(key, getter_coro):
+                result[key] = await getter_coro
+
+            await asyncio.gather(store_result('title', self.get_title(page=new_page)),
+                                 store_result('date', self.get_date(page=new_page)),
+                                 store_result('author', self.get_author(page=new_page)),
+                                 store_result('image_url', self.get_image_url(page=new_page)),
+                                 store_result('body', self.get_body(page=new_page)))
+            results.append(result)
+            pages.append(new_page)
+
+        await asyncio.gather(*[build_result(url) for url in results_urls])
+
+        for page in pages:
+            page.close()
+
+        return results
 
     @abc.abstractmethod
     async def get_title(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:

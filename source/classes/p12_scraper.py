@@ -1,4 +1,3 @@
-import asyncio
 import re
 from typing import Optional
 from urllib.parse import urlparse, urlunparse, quote
@@ -87,29 +86,8 @@ class P12Scraper(BaseNewsScraper):
                 articles_paths.append(url_href)
             return articles_paths
 
-        results = []
-        articles_paths = await get_paths()
-        pages = []
+        articles_urls = list(map(lambda path: str(urlunparse([url_scheme, url_hostname, path, '', '', ''])),
+                                 await get_paths()))
 
-        async def build_result(article_path):
-            article_url = str(urlunparse([url_scheme, url_hostname, article_path, '', '', '']))
-            result = {'article_url': article_url}
-            new_page = await self._wshandler.get_new_page(article_url)
-
-            async def store_result(key, getter_coro):
-                result[key] = await getter_coro
-
-            await asyncio.gather(store_result('title', self.get_title(page=new_page)),
-                                 store_result('date', self.get_date(page=new_page)),
-                                 store_result('author', self.get_author(page=new_page)),
-                                 store_result('image_url', self.get_image_url(page=new_page)),
-                                 store_result('body', self.get_body(page=new_page)))
-            results.append(result)
-            pages.append(new_page)
-
-        await asyncio.gather(*[build_result(path) for path in articles_paths])
-
-        for page in pages:
-            page.close()
-
-        return results
+        scraped_results = await self._gather_results(articles_urls)
+        return scraped_results
