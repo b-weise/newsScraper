@@ -19,11 +19,14 @@ class UninitializedPlaywright(Exception):
 
 class WebsiteHandler:
     def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
-                 robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow'):
+                 robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow',
+                 default_timeout: int = 5, default_navigation_timeout: int = 15):
         self.headless = headless
         self.robots_useragent_key = robots_useragent_key
         self.robots_allow_key = robots_allow_key
         self.robots_disallow_key = robots_disallow_key
+        self.__default_timeout = default_timeout
+        self.__default_navigation_timeout = default_navigation_timeout
         self.common_useragents_url = 'https://www.useragents.me/'
         self.__page = None
         self.__browser_context = None
@@ -36,11 +39,16 @@ class WebsiteHandler:
         self.__browser_context = await browser.launch_persistent_context('', headless=self.headless,
                                                                          user_agent=user_agent)
         self.__page = self.__browser_context.pages[0]
+        self.__setup_page(self.__page)
 
     def __check_playwright_instance(self):
         if self.__browser_context is None:
             raise UninitializedPlaywright(
                 'Playwright is not initialized. Call the "initialize_playwright" method first.')
+
+    def __setup_page(self, page: Page):
+        page.set_default_timeout(self.__default_timeout * 1000)
+        page.set_default_navigation_timeout(self.__default_navigation_timeout * 1000)
 
     @property
     def page(self):
@@ -147,6 +155,7 @@ class WebsiteHandler:
     async def get_new_page(self, url: Optional[str] = None, parsed_robots: Optional[dict[str, list[str]]] = None):
         self.__check_playwright_instance()
         new_page = await self.__browser_context.new_page()
+        self.__setup_page(new_page)
         if url is not None:
             await self.safe_goto(url=url, parsed_robots=parsed_robots, page=new_page)
         return new_page
