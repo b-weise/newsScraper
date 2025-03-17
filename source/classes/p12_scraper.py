@@ -19,7 +19,7 @@ class P12Scraper(BaseNewsScraper):
         header_div = self._wshandler.page.locator('div.article-header')
         title_h1 = header_div.locator('h1')
         title_text = await title_h1.inner_text()
-        return title_text.strip()
+        return self._sanitize_text(title_text)
 
     async def get_date(self, url: str) -> str:
         self._check_website_handler_instance()
@@ -28,7 +28,7 @@ class P12Scraper(BaseNewsScraper):
         article_info_div = desktop_only_div.locator('div.article-info')
         date_time = article_info_div.locator('time')
         date_text = await date_time.inner_text()
-        return date_text.strip()
+        return self._sanitize_text(date_text)
 
     async def get_author(self, url: str) -> str:
         self._check_website_handler_instance()
@@ -38,7 +38,7 @@ class P12Scraper(BaseNewsScraper):
         author_a = author_div.locator('a')
         author_text = await author_a.inner_text()
         author_text = re.sub(f'^\\s*{self.__author_text_prefix}\\s+', '', author_text)
-        return author_text.strip()
+        return self._sanitize_text(author_text)
 
     async def get_image_url(self, url: str) -> str:
         self._check_website_handler_instance()
@@ -56,12 +56,7 @@ class P12Scraper(BaseNewsScraper):
         main_content_div = self._wshandler.page.locator('div.article-main-content')
         article_text_div = main_content_div.locator('div.article-text')
         article_text = await article_text_div.inner_text()
-        text_lines = article_text.split('\n')
-        solid_text_lines = list(filter(lambda line: re.match(r'^\s*$', line) is None,
-                                       text_lines))  # remove empty lines
-        solid_text_block = '\n'.join(solid_text_lines)
-        sanitized_text_block = solid_text_block.replace(u"\u00A0", ' ')  # Replace non-breaking spaces
-        return sanitized_text_block.strip()
+        return self._sanitize_text(article_text)
 
     def search(self) -> list[dict[str, str]]:
         pass

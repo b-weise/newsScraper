@@ -1,4 +1,5 @@
 import abc
+import re
 
 from source.classes.website_handler import WebsiteHandler
 
@@ -30,6 +31,15 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
     async def _navigate_if_necessary(self, url: str):
         if url != self._wshandler.page.url:
             await self._wshandler.safe_goto(url)
+
+    def _sanitize_text(self, raw_text_block: str) -> str:
+        raw_text_lines = raw_text_block.split('\n')
+        solid_text_lines = list(filter(lambda line: re.match(r'^\s*$', line) is None,
+                                       raw_text_lines))  # Remove empty lines
+        solid_text_block = '\n'.join(solid_text_lines)
+        sanitized_text_block = solid_text_block.replace(u"\u00A0", ' ')  # Replace non-breaking spaces
+        trimmed_text_block = sanitized_text_block.strip()
+        return trimmed_text_block
 
     @abc.abstractmethod
     def get_article_url(self) -> str:
