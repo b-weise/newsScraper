@@ -54,13 +54,13 @@ async def test_get_title_call_failure(new_instance: P12Scraper):
 
 
 @pytest.mark.parametrize('input_url,output_date', [
-    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', '30 de enero de 2025 - 00:34'),
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', '2025-01-30T00:34:54-03:00'),
     pytest.param('https://www.pagina12.com.ar/775639-el-futuro-de-la-ia-y-su-impacto-en-el-conocimiento-cambiara-',
-                 '19 de octubre de 2024 - 00:01'),
+                 '2024-10-19T00:01:00-03:00'),
     pytest.param('https://www.pagina12.com.ar/591520-especialistas-argentinos-crean-un-robot-capaz-de-descubrir-f',
-                 '25 de septiembre de 2023 - 23:30'),
+                 '2023-09-25T23:30:43-03:00'),
     pytest.param('https://www.pagina12.com.ar/810583-cambio-el-mundo',
-                 '14 de marzo de 2025 - 00:01'),
+                 '2025-03-14T00:01:00-03:00'),
 ])
 async def test_get_date_success(new_initialized_instance: P12Scraper, input_url: str, output_date: str):
     date = await new_initialized_instance.get_date(input_url)
@@ -251,7 +251,7 @@ async def test_get_body_call_failure(new_instance: P12Scraper):
     pytest.param('genealogistas', False, [
         {'article_url': 'https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
          'title': 'Un manto de caracoles y un colibrí',
-         'date': '13 de febrero de 2025 - 01:14',
+         'date': '2025-02-13T01:14:20-03:00',
          'author': 'María Pia López',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-02/913013-colibri-afp2.jpg',
          'body': """\
@@ -267,7 +267,7 @@ En los días previos al 1 de febrero circuló un llamado a movilizar. Un flyer d
 A veces, cuando se retira la marea, deja partes de la arena como un manto bordado de caracoles. De pedacitos de caracoles. Brillan ahí, como si fueran piedras preciosas. Son los restos rotitos y magníficos. No hay manto más bello que ése que el mar deja a su paso. Y que cada día será distinto. Quizás esta época, en la que los victoriosos hacen gala del gesto fascista de tratar a muchas vidas como desechos, nos exija esa otra política, la de construir con nuestros restos ese manto, con nuestros pedacitos esa incrustación en la arena, con nuestros sueños ese mar que llega y se retira, siempre -decía un poeta- joven."""},
         {'article_url': 'https://www.pagina12.com.ar/803490-de-genealogistas-y-analizantes-ii',
          'title': 'De genealogistas y analizantes II',
-         'date': '13 de febrero de 2025 - 00:38',
+         'date': '2025-02-13T00:38:17-03:00',
          'author': 'Alejandro Benedetto*',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-02/913074-ro08fo0113web.jpg',
          'body': """\
@@ -304,7 +304,7 @@ Porque si el saber no sirve para hacer tajos en los sedimentos sofocantes de la 
 *Psicoanalista. Docente. Escritor."""},
         {'article_url': 'https://www.pagina12.com.ar/800250-genealogistas',
          'title': 'De genealogistas y analizantes',
-         'date': '30 de enero de 2025 - 00:34',
+         'date': '2025-01-30T00:34:54-03:00',
          'author': 'Alejandro Benedetto',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-01/907602-ro08fo0130web_0.jpg',
          'body': """\
@@ -335,7 +335,7 @@ Lo que está haciendo Nietzsche no es una proclama y una apología del olvido en
 Todo lo contrario, nos recuerda que el culto al pasado interrumpe la memoria, la congela, y nos hace olvidar, frecuentemente, lo que está vivo en todo presente."""},
         {'article_url': 'https://www.pagina12.com.ar/298391-la-fiesta-del-monstruo',
          'title': 'La fiesta del monstruo',
-         'date': '11 de octubre de 2020 - 04:33',
+         'date': '2020-10-11T04:33:39-03:00',
          'author': 'Liliana Bellone*',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2020-10/110281-polish-20201011-042650240.jpg',
          'body': """\
@@ -359,7 +359,7 @@ En 1976, Borges declara en el “Prólogo” a la Moneda de hierro: “Sé que e
 (*) Premio Casa de las Américas de Cuba de Novela, 1993"""},
         {'article_url': 'https://www.pagina12.com.ar/115740-la-telenovela-de-la-boda-real-britanica',
          'title': 'La telenovela de la boda real británica',
-         'date': '19 de mayo de 2018 - 10:35',
+         'date': '2018-05-19T10:35:09-03:00',
          'author': 'Marta Núñez',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2018-05/na19fo01_12.jpg',
          'body': """\
@@ -380,7 +380,7 @@ La llorosa Meghan que aparecía ayer en las tapas de algunos periódicos angusti
     pytest.param('krysthopher', False, [
         {'article_url': 'https://www.pagina12.com.ar/284425-100-anos-lo-que-la-vida-te-ensena-otra-forma-de-historieta',
          'title': '"100 años. Lo que la vida te enseña", otra forma de historieta',
-         'date': '12 de agosto de 2020 - 00:11',
+         'date': '2020-08-12T00:11:48-03:00',
          'author': 'Andrés Valenzuela',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2020-08/95809-100-20a-c3-91os.jpg',
          'body': """\
@@ -407,7 +407,7 @@ Un auténtico “meltdown”
 La comiquería Meltdown Comics, de Los Ángeles, supo ganarse su reconocimiento gracias a una buena cantidad de clientes famosos de cine y televisión, por su presencia en distintos programas y películas, por ser escenario para lanzamientos y premieres. Sin embargo, tras 25 años en el negocio, cerró en 2018 y desde entonces el lugar apenas funcionaba como un canal de video para dispositivos móviles. Ahora ni siquiera quedará eso: se incendió el lunes a la noche, por causas que aún se investigan, pero quizás haciendo honor a su nombre. Entre otras figuras conocidas, Ben Stiller se hizo eco de la noticia: “Lamento mucho oír esto. Meltdown Comics fue un luar especial y mucha creatividad salió de allí. Fue una parte de la historia cultural de Los Ángeles en el histórico Sunset Boulevard”."""},
         {'article_url': 'https://www.pagina12.com.ar/278679-el-debut-en-la-historieta-de-krysthopher-woods',
          'title': 'El debut en la historieta de Krysthopher Woods',
-         'date': '19 de julio de 2020 - 00:49',
+         'date': '2020-07-19T00:49:33-03:00',
          'author': 'Andrea Guzmán',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2020-07/3-3x2.jpg',
          'body': """\
@@ -421,7 +421,7 @@ Por ahora, sin ferias y sin reuniones de dibujo a la vista, Krysthopher Woods se
  Krysthopher Woods"""},
         {'article_url': 'https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
          'title': 'En busca de la genealogía felina',
-         'date': '16 de febrero de 2018 - 02:40',
+         'date': '2018-02-16T02:40:46-03:00',
          'author': 'Silvina Friera',
          'image_url': 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2018-02/na31fo01_0.png',
          'body': """\

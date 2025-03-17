@@ -29,7 +29,7 @@ class P12Scraper(BaseNewsScraper):
         desktop_only_div = page.locator('div.hide-on-mobile')
         article_info_div = desktop_only_div.locator('div.article-info')
         date_time = article_info_div.locator('time')
-        date_text = await date_time.inner_text()
+        date_text = await date_time.get_attribute('datetime')
         return self._sanitize_text(date_text)
 
     async def get_author(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
