@@ -123,7 +123,8 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    async def search(self, keyword: str) -> list[dict[str, str]]:
+    async def search(self, keyword: str, case_sensitive: bool = False,
+                     do_throttle: bool = True) -> list[dict[str, str]]:
         pass
 
     async def destroy(self):

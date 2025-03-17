@@ -246,9 +246,9 @@ async def test_get_body_call_failure(new_instance: P12Scraper):
         await new_instance.get_body('https://www.pagina12.com.ar/800250-genealogistas')
 
 
-@pytest.mark.parametrize('input_keyword,expected_output', [
-    pytest.param('asdfasdfasdf', []),
-    pytest.param('genealogistas', [
+@pytest.mark.parametrize('input_keyword,case_sensitive,expected_output', [
+    pytest.param('asdfasdfasdf', False, []),
+    pytest.param('genealogistas', False, [
         {'article_url': 'https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
          'title': 'Un manto de caracoles y un colibrí',
          'date': '13 de febrero de 2025 - 01:14',
@@ -377,7 +377,7 @@ Windsor, la localidad donde tiene lugar la boda, está engalanada con banderas y
 La pareja es tapa de cientos de revistas y de periódicos, y se aprovecha el evento para recordarnos reglas de protocolo (¡como si todos fuéramos invitados!), y se hacen apuestas sobre el secreto bien guardado de la casa diseñadora del vestido de la novia. El negocio de la boda no se queda atrás y hay “merchandise” en venta para todos los gustos y bolsillos.
 La llorosa Meghan que aparecía ayer en las tapas de algunos periódicos angustiada por la ausencia de su padre y el no saber quién la acompañaría al altar ya puede sonreír otra vez: el príncipe Carlos acaba de salir a su rescate, encantado de hacerse cargo de ese papel."""},
     ]),
-    pytest.param('krysthopher', [
+    pytest.param('krysthopher', False, [
         {'article_url': 'https://www.pagina12.com.ar/284425-100-anos-lo-que-la-vida-te-ensena-otra-forma-de-historieta',
          'title': '"100 años. Lo que la vida te enseña", otra forma de historieta',
          'date': '12 de agosto de 2020 - 00:11',
@@ -432,10 +432,12 @@ El carácter místico del gato ha deleitado a sus admiradores y atemorizado a su
 A Van Vechten no le gusta que en El pájaro azul, Maurice Maeterlinck –un amante de los perros– no trate muy bien al “tigre en miniatura”, al retratarlo como un oportunista que adula a sus amigos humanos para conseguir lo que quiere. “Pero ¿alguna vez adulan los gatos? Ninguno que yo haya conocido lo hace”, aclara el escritor. Entre sus preferencias elogia Diálogos de animales, de Colette. “Nadie como ella ha escrito acerca de los animales con una comprensión más empática” porque “los trata con subjetividad, intenta ponerse en su pellejo, los hace hablar por sí mismos”. Un capítulo aparte es el gato en la música. “Los gatos no abusan de la palabra como hacen los humanos; solo recurren a ella en los momentos importantes, para expresar amor, hambre, dolor, placer, peligro (…) Por eso es que su lenguaje es tan conmovedor. Y musical; el gatés conversacional, tanto el apasionado como el más coloquial, tiene una sonoridad única”.
 El gato sobrevivirá porque “no es tan estúpido como el ser humano”. El libro de Van Vechten también emociona. “Feathers está muy cansada de este libro. Me lo ha dicho más de una vez. A veces mirándome con impaciencia mientras escribo. A veces con las patas, rascando con desdén las hojas de papel cuando las tiro al suelo. A veces, en mi mesa de trabajo, se interpone entre mis escritos y yo. Cuando empecé era una gatita, una bolita parecida a un crisantemo de pelo rojizo y rizado, naranja, blanco y negro, y ahora está a punto de convertirse en madre. Me hace sentir muy pequeño, muy poco importante (…) ¿Ves, Feathers?, estoy casi listo. Estoy escribiendo la última página. Puedes venir a mí ahora y pasar las horas en mi regazo”."""},
     ]),
+    pytest.param('KRYSTHOPHER', True, []),
+    pytest.param('GENEALOGISTAS', True, []),
 ])
-async def test_search_success(new_initialized_instance: P12Scraper, input_keyword: str,
+async def test_search_success(new_initialized_instance: P12Scraper, input_keyword: str, case_sensitive: bool,
                               expected_output: list[dict[str, str]]):
-    results = await new_initialized_instance.search(input_keyword)
+    results = await new_initialized_instance.search(keyword=input_keyword, case_sensitive=case_sensitive)
 
     def sort_by_title(results_list):
         return sorted(results_list, key=lambda article: article['title'])

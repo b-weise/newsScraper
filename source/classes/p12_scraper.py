@@ -68,7 +68,8 @@ class P12Scraper(BaseNewsScraper):
         article_text = await article_text_div.inner_text()
         return self._sanitize_text(article_text)
 
-    async def search(self, keyword: str, do_throttle: bool = True) -> list[dict[str, str] | None]:
+    async def search(self, keyword: str, case_sensitive: bool = False,
+                     do_throttle: bool = True) -> list[dict[str, str]]:
         self._check_website_handler_instance()
         url_scheme, url_hostname, _, _, _, _ = list(urlparse(self._host))
 
@@ -104,7 +105,23 @@ class P12Scraper(BaseNewsScraper):
                 # Non-live article: scrap it
                 return await article_scraper(page)
 
-        scraped_articles = await self._gather_articles(articles_urls=articles_urls, do_throttle=do_throttle,
-                                                       check_environment_hook=check_environment_hook)
+        scraped_candidates = await self._gather_articles(articles_urls=articles_urls, do_throttle=do_throttle,
+                                                         check_environment_hook=check_environment_hook)
 
-        return scraped_articles
+        def search_for_keyword() -> list[dict[str, str]]:
+            search_token = keyword
+            matches = []
+            for candidate in scraped_candidates:
+                if candidate is None:
+                    continue
+                search_space = candidate['title'] + candidate['body']
+                if not case_sensitive:
+                    search_token = search_token.casefold()
+                    search_space = search_space.casefold()
+                if search_token in search_space:
+                    matches.append(candidate)
+            return matches
+
+        matching_articles = search_for_keyword()
+
+        return matching_articles
