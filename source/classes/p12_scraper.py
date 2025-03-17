@@ -33,9 +33,9 @@ class P12Scraper(NewsScraperInterface):
         self.__check_website_handler_instance()
         if url != self.__wshandler.page.url:
             await self.__wshandler.safe_goto(url)
-        header_div = self.__wshandler.page.locator('.article-header')
-        title_div = header_div.locator('h1')
-        title_text = await title_div.inner_text()
+        header_div = self.__wshandler.page.locator('div.article-header')
+        title_h1 = header_div.locator('h1')
+        title_text = await title_h1.inner_text()
         return title_text
 
     def get_date(self) -> str:
