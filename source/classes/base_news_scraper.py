@@ -42,7 +42,6 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         return trimmed_text_block
 
     @abc.abstractmethod
-    def get_article_url(self) -> str:
         pass
 
     @abc.abstractmethod
@@ -63,9 +62,6 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     async def get_body(self, url: str) -> str:
-        pass
-
-    @abc.abstractmethod
     def search(self) -> list[dict[str, str]]:
         pass
 

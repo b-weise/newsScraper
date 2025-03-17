@@ -10,9 +10,6 @@ class P12Scraper(BaseNewsScraper):
         self._host = 'https://www.pagina12.com.ar/'
         self.__author_text_prefix = 'Por'
 
-    def get_article_url(self) -> str:
-        pass
-
     async def get_title(self, url: str) -> str:
         self._check_website_handler_instance()
         await self._navigate_if_necessary(url)
