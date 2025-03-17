@@ -52,7 +52,7 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_body(self) -> str:
+    async def get_body(self, url: str) -> str:
         pass
 
     @abc.abstractmethod

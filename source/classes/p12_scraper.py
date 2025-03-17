@@ -50,8 +50,18 @@ class P12Scraper(BaseNewsScraper):
         image_url = urlunparse([url_scheme, url_hostname, url_path, '', '', ''])
         return str(image_url)
 
-    def get_body(self) -> str:
-        pass
+    async def get_body(self, url: str) -> str:
+        self._check_website_handler_instance()
+        await self._navigate_if_necessary(url)
+        main_content_div = self._wshandler.page.locator('div.article-main-content')
+        article_text_div = main_content_div.locator('div.article-text')
+        article_text = await article_text_div.inner_text()
+        text_lines = article_text.split('\n')
+        solid_text_lines = list(filter(lambda line: re.match(r'^\s*$', line) is None,
+                                       text_lines))  # remove empty lines
+        solid_text_block = '\n'.join(solid_text_lines)
+        sanitized_text_block = solid_text_block.replace(u"\u00A0", ' ')  # Replace non-breaking spaces
+        return sanitized_text_block.strip()
 
     def search(self) -> list[dict[str, str]]:
         pass
