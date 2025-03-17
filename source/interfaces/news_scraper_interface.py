@@ -14,7 +14,7 @@ class NewsScraperInterface(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_date(self) -> str:
+    async def get_date(self, url: str) -> str:
         pass
 
     @abc.abstractmethod

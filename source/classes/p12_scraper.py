@@ -26,20 +26,29 @@ class P12Scraper(NewsScraperInterface):
             raise UninitializedWebsiteHandler(
                 'WebsiteHandler is not initialized. Call the "initialize_website_handler" method first.')
 
+    async def __navigate_if_necessary(self, url: str):
+        if url != self.__wshandler.page.url:
+            await self.__wshandler.safe_goto(url)
+
     def get_article_url(self) -> str:
         pass
 
     async def get_title(self, url: str) -> str:
         self.__check_website_handler_instance()
-        if url != self.__wshandler.page.url:
-            await self.__wshandler.safe_goto(url)
+        await self.__navigate_if_necessary(url)
         header_div = self.__wshandler.page.locator('div.article-header')
         title_h1 = header_div.locator('h1')
         title_text = await title_h1.inner_text()
         return title_text
 
-    def get_date(self) -> str:
-        pass
+    async def get_date(self, url: str) -> str:
+        self.__check_website_handler_instance()
+        await self.__navigate_if_necessary(url)
+        desktop_only_div = self.__wshandler.page.locator('div.hide-on-mobile')
+        article_info_div = desktop_only_div.locator('div.article-info')
+        date_time = article_info_div.locator('time')
+        date_text = await date_time.inner_text()
+        return date_text
 
     def get_author(self) -> str:
         pass
