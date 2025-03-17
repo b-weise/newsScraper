@@ -1,5 +1,4 @@
-from source.classes.website_handler import WebsiteHandler
-from source.interfaces.news_scraper_interface import BaseNewsScraper
+from source.classes.base_news_scraper import BaseNewsScraper
 
 
 class P12Scraper(BaseNewsScraper):

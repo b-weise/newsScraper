@@ -2,7 +2,7 @@ from typing import Callable
 
 import pytest
 
-from source.interfaces.news_scraper_interface import BaseNewsScraper
+from source.classes.base_news_scraper import BaseNewsScraper
 
 
 class FullSample(BaseNewsScraper):

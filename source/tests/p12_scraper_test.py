@@ -1,8 +1,8 @@
 import pytest
 
+from source.classes.base_news_scraper import BaseNewsScraper, UninitializedWebsiteHandler
 from source.classes.p12_scraper import P12Scraper
 from source.classes.website_handler import NonCompliantURL
-from source.interfaces.news_scraper_interface import BaseNewsScraper, UninitializedWebsiteHandler
 
 
 @pytest.fixture

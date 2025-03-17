@@ -1,6 +1,4 @@
 import abc
-from functools import partial
-from typing import Any, Type
 
 from source.classes.website_handler import WebsiteHandler
 
