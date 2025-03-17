@@ -2,10 +2,10 @@ from typing import Callable
 
 import pytest
 
-from source.interfaces.news_scraper_interface import NewsScraperInterface
+from source.interfaces.news_scraper_interface import BaseNewsScraper
 
 
-class FullSample(NewsScraperInterface):
+class FullSample(BaseNewsScraper):
     #  Methods
     get_article_url: Callable = lambda: ()
     get_title: Callable = lambda: ()
@@ -17,10 +17,10 @@ class FullSample(NewsScraperInterface):
 
 
 def test_instance_success():
-    assert isinstance(FullSample(), NewsScraperInterface)
+    assert isinstance(FullSample(), BaseNewsScraper)
 
 
-class EmptySample(NewsScraperInterface):
+class EmptySample(BaseNewsScraper):
     pass
 
 

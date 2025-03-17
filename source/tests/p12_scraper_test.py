@@ -1,8 +1,8 @@
 import pytest
 
-from source.classes.p12_scraper import P12Scraper, UninitializedWebsiteHandler
+from source.classes.p12_scraper import P12Scraper
 from source.classes.website_handler import NonCompliantURL
-from source.interfaces.news_scraper_interface import NewsScraperInterface
+from source.interfaces.news_scraper_interface import BaseNewsScraper, UninitializedWebsiteHandler
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ async def new_initialized_instance(new_instance: P12Scraper) -> P12Scraper:
 
 
 def test_interface_success(new_instance: P12Scraper):
-    assert isinstance(new_instance, NewsScraperInterface)
+    assert isinstance(new_instance, BaseNewsScraper)
 
 
 @pytest.mark.parametrize('input_url,output_title', [
