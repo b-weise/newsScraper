@@ -247,6 +247,7 @@ async def test_get_body_call_failure(new_instance: P12Scraper):
 
 
 @pytest.mark.parametrize('input_keyword,expected_output', [
+    pytest.param('asdfasdfasdf', []),
     pytest.param('genealogistas', [
         {'article_url': 'https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
          'title': 'Un manto de caracoles y un colibrí',
