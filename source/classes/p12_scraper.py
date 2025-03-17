@@ -1,8 +1,9 @@
 import re
+from collections.abc import Callable, Iterable
 from typing import Optional
 from urllib.parse import urlparse, urlunparse, quote
 
-from playwright.async_api import Page, TimeoutError as PWTimeoutError
+from playwright.async_api import Page, TimeoutError as PWTimeoutError, expect
 
 from source.classes.base_news_scraper import BaseNewsScraper
 
@@ -67,7 +68,7 @@ class P12Scraper(BaseNewsScraper):
         article_text = await article_text_div.inner_text()
         return self._sanitize_text(article_text)
 
-    async def search(self, keyword: str) -> list[dict[str, str]]:
+    async def search(self, keyword: str, do_throttle: bool = True) -> list[dict[str, str] | None]:
         self._check_website_handler_instance()
         url_scheme, url_hostname, _, _, _, _ = list(urlparse(self._host))
 
@@ -93,5 +94,17 @@ class P12Scraper(BaseNewsScraper):
         articles_urls = list(map(lambda path: str(urlunparse([url_scheme, url_hostname, path, '', '', ''])),
                                  await get_paths()))
 
-        scraped_results = await self._gather_results(articles_urls)
-        return scraped_results
+        async def check_environment_hook(page: Page, article_scraper: Callable) -> Iterable[str] | None:
+            try:
+                await expect(page.locator('article.live-blog-post').first).to_be_attached(attached=False)
+            except AssertionError:
+                # Live article: ignore it
+                return None
+            else:
+                # Non-live article: scrap it
+                return await article_scraper(page)
+
+        scraped_articles = await self._gather_articles(articles_urls=articles_urls, do_throttle=do_throttle,
+                                                       check_environment_hook=check_environment_hook)
+
+        return scraped_articles

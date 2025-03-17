@@ -1,4 +1,5 @@
 import pytest
+from playwright.async_api import TimeoutError as PWTimeoutError
 
 from source.classes.base_news_scraper import BaseNewsScraper, UninitializedWebsiteHandler
 from source.classes.p12_scraper import P12Scraper
@@ -439,6 +440,15 @@ async def test_search_success(new_initialized_instance: P12Scraper, input_keywor
         return sorted(results_list, key=lambda article: article['title'])
 
     assert sort_by_title(results) == sort_by_title(expected_output)
+
+
+async def test_search_throttle_success(new_initialized_instance: P12Scraper):
+    await new_initialized_instance.search('gobierno')
+
+
+async def test_search_throttle_failure(new_initialized_instance: P12Scraper):
+    with pytest.raises(PWTimeoutError):
+        await new_initialized_instance.search('gobierno', do_throttle=False)
 
 
 async def test_search_call_failure(new_instance: P12Scraper):
