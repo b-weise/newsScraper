@@ -110,3 +110,34 @@ async def test_get_author_failure(new_initialized_instance: P12Scraper, input_ur
 async def test_get_author_call_failure(new_instance: P12Scraper):
     with pytest.raises(UninitializedWebsiteHandler):
         await new_instance.get_author('https://www.pagina12.com.ar/800250-genealogistas')
+
+
+@pytest.mark.parametrize('input_url,output_image_url', [
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas',
+                 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-01/907602-ro08fo0130web_0.jpg'),
+    pytest.param('https://www.pagina12.com.ar/775639-el-futuro-de-la-ia-y-su-impacto-en-el-conocimiento-cambiara-',
+                 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2024-10/881749-inteligencia-20artificial.jpg'),
+    pytest.param('https://www.pagina12.com.ar/591520-especialistas-argentinos-crean-un-robot-capaz-de-descubrir-f',
+                 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2023-09/770295-20-a-20gabriel-20iglesias.jpg'),
+    pytest.param('https://www.pagina12.com.ar/810583-cambio-el-mundo',
+                 'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-03/920791-21-20op1-efe.jpg'),
+])
+async def test_get_image_url_success(new_initialized_instance: P12Scraper, input_url: str, output_image_url: str):
+    image_url = await new_initialized_instance.get_image_url(input_url)
+    assert image_url == output_image_url
+
+
+@pytest.mark.parametrize('input_url', [
+    pytest.param('https://www.pagina12.com.ar/349353471/'),
+    pytest.param('https://www.pagina12.com.ar/349353471/test'),
+    pytest.param('https://www.pagina12.com.ar/andytow/'),
+    pytest.param('https://www.pagina12.com.ar/andytow/test'),
+])
+async def test_get_image_url_failure(new_initialized_instance: P12Scraper, input_url: str):
+    with pytest.raises(NonCompliantURL):
+        await new_initialized_instance.get_image_url(input_url)
+
+
+async def test_get_image_url_call_failure(new_instance: P12Scraper):
+    with pytest.raises(UninitializedWebsiteHandler):
+        await new_instance.get_image_url('https://www.pagina12.com.ar/800250-genealogistas')

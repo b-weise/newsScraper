@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urlparse, urlunparse
 
 from source.classes.base_news_scraper import BaseNewsScraper
 
@@ -39,8 +40,15 @@ class P12Scraper(BaseNewsScraper):
         author_text = re.sub(f'^\\s*{self.__author_text_prefix}\\s+', '', author_text)
         return author_text.strip()
 
-    def get_image_url(self) -> str:
-        pass
+    async def get_image_url(self, url: str) -> str:
+        self._check_website_handler_instance()
+        await self._navigate_if_necessary(url)
+        main_image_div = self._wshandler.page.locator('div.article-main-image')
+        image_img = main_image_div.locator('img')
+        image_src = await image_img.get_attribute('src')
+        url_scheme, url_hostname, url_path, _, _, _ = list(urlparse(image_src))
+        image_url = urlunparse([url_scheme, url_hostname, url_path, '', '', ''])
+        return str(image_url)
 
     def get_body(self) -> str:
         pass

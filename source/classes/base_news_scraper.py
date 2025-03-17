@@ -48,7 +48,7 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_image_url(self) -> str:
+    async def get_image_url(self, url: str) -> str:
         pass
 
     @abc.abstractmethod
