@@ -25,7 +25,7 @@ class NewsScraperInterface(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_title(self) -> str:
+    async def get_title(self, url: str) -> str:
         pass
 
     @abc.abstractmethod
