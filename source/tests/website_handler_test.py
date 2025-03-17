@@ -302,3 +302,19 @@ async def test_setup_robots_compliance_failure(new_initialized_instance: Website
 async def test_setup_robots_compliance_call_failure(new_instance: WebsiteHandler):
     with pytest.raises(UninitializedPlaywright):
         await new_instance.setup_robots_compliance('https://www.pagina12.com.ar/800250-genealogistas')
+
+
+async def test_get_new_page_success(new_initialized_instance: WebsiteHandler):
+    urls = ['https://www.pagina12.com.ar/800250-genealogistas', 'https://www.pagina12.com.ar/secciones/el-pais', None]
+    pages = []
+    for url in urls:
+        pages.append(await new_initialized_instance.get_new_page(url))
+    for page, input_url in zip(pages, urls):
+        if input_url is None:
+            input_url = 'about:blank'
+        assert page.url == input_url
+
+
+async def test_get_new_page_call_failure(new_instance: WebsiteHandler):
+    with pytest.raises(UninitializedPlaywright):
+        await new_instance.get_new_page('https://www.pagina12.com.ar/800250-genealogistas')

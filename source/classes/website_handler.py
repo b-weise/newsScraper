@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse, urlunparse
 
-from playwright.async_api import async_playwright, APIResponse
+from playwright.async_api import async_playwright, APIResponse, Page
 
 
 class NonCompliantURL(Exception):
@@ -103,12 +103,14 @@ class WebsiteHandler:
                 is_compliant = path in allowed_paths
         return is_compliant
 
-    async def safe_goto(self, url: str, parsed_robots: Optional[dict[str, list[str]]] = None):
+    async def safe_goto(self, url: str, parsed_robots: Optional[dict[str, list[str]]] = None,
+                        page: Optional[Page] = None):
         parsed_robots = parsed_robots or self.__parsed_robots
         self.__check_playwright_instance()
         if not self.is_compliant_url(url, parsed_robots):
             raise NonCompliantURL(f'The URL "{url}" is disallowed by robots.txt rules.')
-        await self.__page.goto(url)
+        page = page or self.__page
+        await page.goto(url)
 
     async def get_common_useragent(self) -> str:
         self.__check_playwright_instance()
@@ -141,6 +143,13 @@ class WebsiteHandler:
         robots_contents = await robots_response.text()
         parsed_robots = self.parse_robots_file(robots_contents)
         self.__parsed_robots = parsed_robots
+
+    async def get_new_page(self, url: Optional[str] = None, parsed_robots: Optional[dict[str, list[str]]] = None):
+        self.__check_playwright_instance()
+        new_page = await self.__browser_context.new_page()
+        if url is not None:
+            await self.safe_goto(url=url, parsed_robots=parsed_robots, page=new_page)
+        return new_page
 
     async def destroy(self):
         if self.__browser_context is not None:
