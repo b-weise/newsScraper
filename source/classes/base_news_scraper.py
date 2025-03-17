@@ -2,6 +2,8 @@ import abc
 import re
 from typing import Optional
 
+from playwright.async_api import Page
+
 from source.classes.website_handler import WebsiteHandler
 
 
@@ -29,11 +31,11 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
             raise UninitializedWebsiteHandler(
                 'WebsiteHandler is not initialized. Call the "initialize_website_handler" method first.')
 
-    async def _navigate_if_necessary(self, url: Optional[str] = None) -> str:
+    async def _navigate_if_necessary(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         if url is None:
             url = self._wshandler.page.url
         elif url != self._wshandler.page.url:
-            await self._wshandler.safe_goto(url)
+            await self._wshandler.safe_goto(url=url, page=page)
         return url
 
     def _sanitize_text(self, raw_text_block: str) -> str:
@@ -46,23 +48,23 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         return trimmed_text_block
 
     @abc.abstractmethod
-    async def get_title(self, url: Optional[str] = None) -> str:
+    async def get_title(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_date(self, url: Optional[str] = None) -> str:
+    async def get_date(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_author(self, url: Optional[str] = None) -> str:
+    async def get_author(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_image_url(self, url: Optional[str] = None) -> str:
+    async def get_image_url(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_body(self, url: Optional[str] = None) -> str:
+    async def get_body(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         pass
 
     @abc.abstractmethod
