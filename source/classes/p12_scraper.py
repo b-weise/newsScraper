@@ -2,7 +2,7 @@ import re
 from typing import Optional
 from urllib.parse import urlparse, urlunparse, quote
 
-from playwright.async_api import Page
+from playwright.async_api import Page, TimeoutError as PWTimeoutError
 
 from source.classes.base_news_scraper import BaseNewsScraper
 
@@ -11,7 +11,6 @@ class P12Scraper(BaseNewsScraper):
     def __init__(self):
         super().__init__()
         self._host = 'https://www.pagina12.com.ar/'
-        self.__author_text_prefix = 'Por'
 
     async def get_title(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         self._check_website_handler_instance()
@@ -33,15 +32,20 @@ class P12Scraper(BaseNewsScraper):
         return self._sanitize_text(date_text)
 
     async def get_author(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
-        self._check_website_handler_instance()
-        page = page or self._wshandler.page
-        await self._navigate_if_necessary(url=url, page=page)
-        header_div = page.locator('div.article-header')
-        author_div = header_div.locator('div.author')
-        author_a = author_div.locator('a')
-        author_text = await author_a.inner_text()
-        author_text = re.sub(f'^\\s*{self.__author_text_prefix}\\s+', '', author_text)
-        return self._sanitize_text(author_text)
+        author_text = ''
+        try:
+            self._check_website_handler_instance()
+            page = page or self._wshandler.page
+            await self._navigate_if_necessary(url=url, page=page)
+            header_div = page.locator('div.article-header')
+            author_div = header_div.locator('div.author')
+            author_a = author_div.locator('a')
+            author_text = await author_a.inner_text()
+            author_text = re.sub(f'^\\s*Por\\s+', '', author_text)
+            author_text = self._sanitize_text(author_text)
+        except PWTimeoutError:
+            pass  # Author absence is acceptable
+        return author_text
 
     async def get_image_url(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
         self._check_website_handler_instance()
