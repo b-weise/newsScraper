@@ -136,7 +136,7 @@ class WebsiteHandler:
 
     async def setup_robots_compliance(self, sample_url: str):
         url_scheme, url_hostname, _, _, _, _ = list(urlparse(sample_url))
-        robots_url = urlunparse([url_scheme, url_hostname, '/robots.txt', '', '', ''])
+        robots_url = str(urlunparse([url_scheme, url_hostname, '/robots.txt', '', '', '']))
         robots_response = await self.get_request(robots_url)
         robots_contents = await robots_response.text()
         parsed_robots = self.parse_robots_file(robots_contents)

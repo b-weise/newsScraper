@@ -44,8 +44,8 @@ class P12Scraper(BaseNewsScraper):
         image_img = main_image_div.locator('img')
         image_src = await image_img.get_attribute('src')
         url_scheme, url_hostname, url_path, _, _, _ = list(urlparse(image_src))
-        image_url = urlunparse([url_scheme, url_hostname, url_path, '', '', ''])
-        return str(image_url)
+        image_url = str(urlunparse([url_scheme, url_hostname, url_path, '', '', '']))
+        return image_url
 
     async def get_body(self, url: str) -> str:
         self._check_website_handler_instance()
