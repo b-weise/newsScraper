@@ -1,5 +1,6 @@
 import abc
 import re
+from typing import Optional
 
 from source.classes.website_handler import WebsiteHandler
 
@@ -28,9 +29,12 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
             raise UninitializedWebsiteHandler(
                 'WebsiteHandler is not initialized. Call the "initialize_website_handler" method first.')
 
-    async def _navigate_if_necessary(self, url: str):
-        if url != self._wshandler.page.url:
+    async def _navigate_if_necessary(self, url: Optional[str] = None) -> str:
+        if url is None:
+            url = self._wshandler.page.url
+        elif url != self._wshandler.page.url:
             await self._wshandler.safe_goto(url)
+        return url
 
     def _sanitize_text(self, raw_text_block: str) -> str:
         raw_text_lines = raw_text_block.split('\n')
@@ -42,26 +46,26 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         return trimmed_text_block
 
     @abc.abstractmethod
+    async def get_title(self, url: Optional[str] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_title(self, url: str) -> str:
+    async def get_date(self, url: Optional[str] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_date(self, url: str) -> str:
+    async def get_author(self, url: Optional[str] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_author(self, url: str) -> str:
+    async def get_image_url(self, url: Optional[str] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_image_url(self, url: str) -> str:
+    async def get_body(self, url: Optional[str] = None) -> str:
         pass
 
     @abc.abstractmethod
-    async def get_body(self, url: str) -> str:
     def search(self) -> list[dict[str, str]]:
         pass
 
