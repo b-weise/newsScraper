@@ -1,3 +1,5 @@
+import re
+
 from source.classes.base_news_scraper import BaseNewsScraper
 
 
@@ -5,6 +7,7 @@ class P12Scraper(BaseNewsScraper):
     def __init__(self):
         super().__init__()
         self._host = 'https://www.pagina12.com.ar/'
+        self.__author_text_prefix = 'Por'
 
     def get_article_url(self) -> str:
         pass
@@ -15,7 +18,7 @@ class P12Scraper(BaseNewsScraper):
         header_div = self._wshandler.page.locator('div.article-header')
         title_h1 = header_div.locator('h1')
         title_text = await title_h1.inner_text()
-        return title_text
+        return title_text.strip()
 
     async def get_date(self, url: str) -> str:
         self._check_website_handler_instance()
@@ -24,10 +27,17 @@ class P12Scraper(BaseNewsScraper):
         article_info_div = desktop_only_div.locator('div.article-info')
         date_time = article_info_div.locator('time')
         date_text = await date_time.inner_text()
-        return date_text
+        return date_text.strip()
 
-    def get_author(self) -> str:
-        pass
+    async def get_author(self, url: str) -> str:
+        self._check_website_handler_instance()
+        await self._navigate_if_necessary(url)
+        header_div = self._wshandler.page.locator('div.article-header')
+        author_div = header_div.locator('div.author')
+        author_a = author_div.locator('a')
+        author_text = await author_a.inner_text()
+        author_text = re.sub(f'^\\s*{self.__author_text_prefix}\\s+', '', author_text)
+        return author_text.strip()
 
     def get_image_url(self) -> str:
         pass

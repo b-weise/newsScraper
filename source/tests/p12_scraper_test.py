@@ -80,3 +80,33 @@ async def test_get_date_failure(new_initialized_instance: P12Scraper, input_url:
 async def test_get_date_call_failure(new_instance: P12Scraper):
     with pytest.raises(UninitializedWebsiteHandler):
         await new_instance.get_date('https://www.pagina12.com.ar/800250-genealogistas')
+
+
+@pytest.mark.parametrize('input_url,output_author', [
+    pytest.param('https://www.pagina12.com.ar/800250-genealogistas', 'Alejandro Benedetto'),
+    pytest.param('https://www.pagina12.com.ar/775639-el-futuro-de-la-ia-y-su-impacto-en-el-conocimiento-cambiara-',
+                 'Dylan Resnik'),
+    pytest.param('https://www.pagina12.com.ar/591520-especialistas-argentinos-crean-un-robot-capaz-de-descubrir-f',
+                 'María Ximena Pérez'),
+    pytest.param('https://www.pagina12.com.ar/810583-cambio-el-mundo',
+                 'Emir Sader'),
+])
+async def test_get_author_success(new_initialized_instance: P12Scraper, input_url: str, output_author: str):
+    author = await new_initialized_instance.get_author(input_url)
+    assert author == output_author
+
+
+@pytest.mark.parametrize('input_url', [
+    pytest.param('https://www.pagina12.com.ar/349353471/'),
+    pytest.param('https://www.pagina12.com.ar/349353471/test'),
+    pytest.param('https://www.pagina12.com.ar/andytow/'),
+    pytest.param('https://www.pagina12.com.ar/andytow/test'),
+])
+async def test_get_author_failure(new_initialized_instance: P12Scraper, input_url: str):
+    with pytest.raises(NonCompliantURL):
+        await new_initialized_instance.get_author(input_url)
+
+
+async def test_get_author_call_failure(new_instance: P12Scraper):
+    with pytest.raises(UninitializedWebsiteHandler):
+        await new_instance.get_author('https://www.pagina12.com.ar/800250-genealogistas')

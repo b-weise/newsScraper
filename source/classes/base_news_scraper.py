@@ -44,7 +44,7 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_author(self) -> str:
+    async def get_author(self, url: str) -> str:
         pass
 
     @abc.abstractmethod
