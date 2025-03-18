@@ -140,6 +140,7 @@ class P12Scraper(BaseNewsScraper):
                     search_token = search_token.casefold()
                     search_space = search_space.casefold()
                 if search_token in search_space:
+                    print(f'Matched: {candidate['article_url']}')
                     matches.append(candidate)
             return matches
 
@@ -152,9 +153,11 @@ class P12Scraper(BaseNewsScraper):
         articles_urls = list(map(lambda path: str(urlunparse([url_scheme, url_hostname, path, '', '', ''])),
                                  await get_paths()))
 
+        print(f'Candidate articles found: {len(articles_urls)}')
         scraped_candidates = await self._gather_articles(articles_urls=articles_urls, do_throttle=do_throttle,
                                                          check_environment_hook=check_environment_hook)
 
         matching_articles = search_for_keyword()
+        print(f'Matching articles found: {len(matching_articles)}')
 
         return matching_articles

@@ -190,6 +190,7 @@ class WebsiteHandler:
         Re-initializes the browser context with a different, random user-agent.
         """
         new_useragent = await self.get_common_useragent()
+        print(f'New user-agent: {new_useragent}')
         await self.initialize_playwright(user_agent=new_useragent)
 
     async def initialize_random_useragent_context(self):

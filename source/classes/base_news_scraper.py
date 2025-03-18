@@ -35,6 +35,7 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
                                          default_navigation_timeout_sec=default_navigation_timeout_sec)
         await self._wshandler.initialize_random_useragent_context()
         await self._wshandler.setup_robots_compliance(self._host)
+        print(f'P12 robots.txt has been loaded')
 
     def _check_website_handler_instance(self):
         """
@@ -99,6 +100,7 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
             new_page = await self._wshandler.get_new_page(article_url)
             pages.append(new_page)
 
+            print(f'Scraping: {article_url}')
             if check_environment_hook is None:
                 scraping_results = await article_scraper(new_page)
             else:
