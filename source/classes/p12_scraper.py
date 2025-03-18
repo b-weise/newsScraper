@@ -9,6 +9,9 @@ from source.classes.base_news_scraper import BaseNewsScraper
 
 
 class P12Scraper(BaseNewsScraper):
+    """
+    Implements all abstract methods from BaseNewsScraper with logic specific to pagina12.com.ar.
+    """
     def __init__(self):
         super().__init__()
         self._host = 'https://www.pagina12.com.ar/'
@@ -69,7 +72,7 @@ class P12Scraper(BaseNewsScraper):
             url_scheme, url_hostname, url_path, _, _, _ = list(urlparse(image_src))
             image_url = str(urlunparse([url_scheme, url_hostname, url_path, '', '', '']))
         except PWTimeoutError:
-            pass  # Others have no images at all, so this exception is silenced
+            pass  # Others have no images at all; therefore, their absence is acceptable
         return image_url
 
     async def get_body(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
@@ -83,7 +86,14 @@ class P12Scraper(BaseNewsScraper):
 
     async def search(self, keyword: str, case_sensitive: bool = False,
                      do_throttle: bool = True) -> list[dict[str, str]]:
+        """
+        Uses the site's internal search engine to find candidate articles, gathers their paths, scrapes them
+        and performs another, case-sensible search in each candidate's title and body. Returns matching articles.
+        """
         def build_search_url():
+            """
+            Sanitizes the given keyword before building a search URL that includes it.
+            """
             sanitized_keyword = quote(keyword)
             url_path = '/buscar'
             url_query = f'q={sanitized_keyword}'
@@ -91,6 +101,9 @@ class P12Scraper(BaseNewsScraper):
             return full_url
 
         async def get_paths():
+            """
+            Scrapes all articles paths from the search results page.
+            """
             articles_paths = []
             article_item_header_divs = self._wshandler.page.locator('div.article-item__header')
             for item in await article_item_header_divs.all():
@@ -100,6 +113,9 @@ class P12Scraper(BaseNewsScraper):
             return articles_paths
 
         async def check_environment_hook(page: Page, article_scraper: Callable) -> Iterable[str] | None:
+            """
+            A hook that determines if the page environment is suitable for scraping.
+            """
             try:
                 await expect(page.locator('article.live-blog-post').first).to_be_attached(attached=False)
             except AssertionError:
@@ -110,6 +126,10 @@ class P12Scraper(BaseNewsScraper):
                 return await article_scraper(page)
 
         def search_for_keyword() -> list[dict[str, str]]:
+            """
+            Searches for the given search_token in the scraped_candidates' title and body,
+            considering letter case sensitivity.
+            """
             search_token = keyword
             matches = []
             for candidate in scraped_candidates:

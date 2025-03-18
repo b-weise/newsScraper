@@ -18,6 +18,10 @@ class UninitializedPlaywright(Exception):
 
 
 class WebsiteHandler:
+    """
+    Handles fundamental website interactions, including robots.txt compliance,
+    user-agent handling and browser tab management.
+    """
     def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
                  robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow',
                  default_timeout_sec: int = 5, default_navigation_timeout_sec: int = 25):
@@ -33,6 +37,11 @@ class WebsiteHandler:
         self.__parsed_robots = None
 
     async def initialize_playwright(self, user_agent: Optional[str] = None):
+        """
+        Initializes Playwright and sets up browser context.
+        Must be called externally as __init__() cannot invoke asynchronous methods.
+        Destroys any existing context when invoked.
+        """
         await self.destroy()
         playwright = await async_playwright().start()
         browser = playwright.chromium
@@ -42,29 +51,55 @@ class WebsiteHandler:
         self.__setup_page(self.__page)
 
     def __check_playwright_instance(self):
+        """
+        Ensures that Playwright has been initialized.
+        """
         if self.__browser_context is None:
             raise UninitializedPlaywright(
                 'Playwright is not initialized. Call the "initialize_playwright" method first.')
 
     def __setup_page(self, page: Page):
+        """
+        Sets page configurations such as default timeouts.
+        """
         page.set_default_timeout(self.__default_timeout_sec * 1000)
         page.set_default_navigation_timeout(self.__default_navigation_timeout_sec * 1000)
 
     @property
     def page(self):
+        """
+        The main page launched during browser context initialization.
+        """
         self.__check_playwright_instance()
         return self.__page
 
     async def get_request(self, url: str) -> APIResponse:
+        """
+        Performs an HTTP GET request and returns the response object.
+        """
         self.__check_playwright_instance()
         response = await self.__browser_context.request.get(url)
         return response
 
     def parse_robots_file(self, robots_content: str) -> dict[str, list[str]]:
+        """
+        Parses robots.txt. Only loads generic user-agent ('User-agent *') directives.
+        Parsing logic follows these references:
+            https://developers.google.com/search/docs/crawling-indexing/robots/create-robots-txt#create_rules
+            https://en.wikipedia.org/wiki/Robots.txt#Examples
+        """
         def split_line(line: str) -> list[str]:
+            """
+            Splits a text line by whitespace.
+            """
             return re.split(r'\s+', line)
 
         def is_directive_present(directive: str, line: str) -> bool:
+            """
+            Performs a case-insensitive search for a robots.txt directive.
+            Matches against the beginning of the line and partial words,
+            e.g. the token 'allow' matches 'allowed'.
+            """
             return re.match(f'^{directive}', line, flags=re.I) is not None
 
         useragent_key = self.__robots_useragent_key
@@ -94,7 +129,10 @@ class WebsiteHandler:
         return parsed_content
 
     def is_compliant_url(self, url: str, parsed_robots: Optional[dict[str, list[str]]] = None) -> bool:
-        # criteria based on: https://developers.google.com/search/docs/crawling-indexing/robots/create-robots-txt
+        """
+        Evaluates whether the given URL follows loaded robots.txt rules.
+        If no robots.txt is loaded, all URLs are allowed.
+        """
         parsed_robots = parsed_robots or {}
         allowed_paths = parsed_robots.get(self.__robots_allow_key, [])
         disallowed_paths = parsed_robots.get(self.__robots_disallow_key, [])
@@ -113,6 +151,10 @@ class WebsiteHandler:
 
     async def safe_goto(self, url: str, parsed_robots: Optional[dict[str, list[str]]] = None,
                         page: Optional[Page] = None):
+        """
+        Navigates to the given URL only if it complies with host's robots.txt rules,
+        assuming there's a robots file loaded.
+        """
         parsed_robots = parsed_robots or self.__parsed_robots
         self.__check_playwright_instance()
         if not self.is_compliant_url(url, parsed_robots):
@@ -121,6 +163,10 @@ class WebsiteHandler:
         await page.goto(url)
 
     async def get_common_useragent(self) -> str:
+        """
+        Navigates to __common_useragents_url, scrapes commonly found user-agents published there,
+        and returns one chosen randomly.
+        """
         self.__check_playwright_instance()
         await self.__page.goto(self.__common_useragents_url)
         json_parent_div = self.__page.locator('#most-common-desktop-useragents-json-csv')
@@ -132,19 +178,32 @@ class WebsiteHandler:
         return random_useragent
 
     async def get_current_useragent(self):
+        """
+        Returns the user-agent of the current browser context.
+        """
         self.__check_playwright_instance()
         useragent = await self.__page.evaluate('() => navigator.userAgent')
         return useragent
 
     async def change_useragent(self):
+        """
+        Re-initializes the browser context with a different, random user-agent.
+        """
         new_useragent = await self.get_common_useragent()
         await self.initialize_playwright(user_agent=new_useragent)
 
     async def initialize_random_useragent_context(self):
+        """
+        Launches the original Playwright browser context to scrape a commonly used user-agent,
+        then re-initializes the browser context with the retrieved user-agent.
+        """
         await self.initialize_playwright()
         await self.change_useragent()
 
     async def setup_robots_compliance(self, sample_url: str):
+        """
+        Downloads and parses the robots.txt file from the host of the given sample_url.
+        """
         url_scheme, url_hostname, _, _, _, _ = list(urlparse(sample_url))
         robots_url = str(urlunparse([url_scheme, url_hostname, '/robots.txt', '', '', '']))
         robots_response = await self.get_request(robots_url)
@@ -153,6 +212,9 @@ class WebsiteHandler:
         self.__parsed_robots = parsed_robots
 
     async def get_new_page(self, url: Optional[str] = None, parsed_robots: Optional[dict[str, list[str]]] = None):
+        """
+        Opens, configures and returns a new page. If URL is provided, navigates to it.
+        """
         self.__check_playwright_instance()
         new_page = await self.__browser_context.new_page()
         self.__setup_page(new_page)
@@ -161,6 +223,9 @@ class WebsiteHandler:
         return new_page
 
     async def destroy(self):
+        """
+        Releases allocated resources.
+        """
         if self.__browser_context is not None:
             await self.__browser_context.close()
             self.__page = None

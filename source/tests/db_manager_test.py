@@ -20,6 +20,9 @@ def test_instance_success():
 
 @pytest.fixture
 async def new_instance() -> DBManager:
+    """
+    Yields a new instance of DBManager and ensures its resources are released.
+    """
     db_filepath = Path('testing.db')
     dbmanager = DBManager(filepath=db_filepath)
     yield dbmanager

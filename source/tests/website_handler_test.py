@@ -9,6 +9,9 @@ from source.classes.website_handler import WebsiteHandler, NonCompliantURL, Unin
 
 @pytest.fixture
 async def new_instance() -> WebsiteHandler:
+    """
+    Yields an uninitialized instance of WebsiteHandler and ensures its resources are released.
+    """
     wshandler = WebsiteHandler()
     yield wshandler
     await wshandler.destroy()
@@ -16,6 +19,9 @@ async def new_instance() -> WebsiteHandler:
 
 @pytest.fixture
 async def new_initialized_instance(new_instance: WebsiteHandler) -> WebsiteHandler:
+    """
+    Returns an initialiazed new_instance.
+    """
     await new_instance.initialize_playwright()
     return new_instance
 
@@ -204,6 +210,7 @@ async def test_safe_goto_call_failure(new_instance: WebsiteHandler, input_url: s
         await new_instance.safe_goto(input_url, parsed_robots)
 
 
+# Preserves data across tests
 pytest.common_useragent_tests_storage = {
     'cycles': 6,
     'test_useragents': [],
@@ -229,11 +236,17 @@ pytest.common_useragent_tests_storage = {
 
 @pytest.mark.parametrize('tests_counter', range(pytest.common_useragent_tests_storage['cycles']))
 async def test_get_common_useragent_success(new_initialized_instance: WebsiteHandler, tests_counter: int):
+    """
+    Tests the randomness of the User-Agents chosen by get_common_useragent().
+    'cycles' determines the number of repetitions.
+    """
     useragent = await new_initialized_instance.get_common_useragent()
     assert useragent in pytest.common_useragent_tests_storage['current_common_useragents']
     pytest.common_useragent_tests_storage['test_useragents'].append(useragent)
     if (len(pytest.common_useragent_tests_storage['test_useragents'])
             == pytest.common_useragent_tests_storage['cycles']):
+        # On the last cycle, 'test_useragents' is sorted to ensure that any differing User-Agents
+        # occupy opposite indexes in the list
         sorted_stored_useragents = sorted(pytest.common_useragent_tests_storage['test_useragents'])
         pytest.common_useragent_tests_storage['test_useragents'] = []
         assert sorted_stored_useragents[0] != sorted_stored_useragents[-1]

@@ -8,6 +8,9 @@ from source.classes.website_handler import NonCompliantURL
 
 @pytest.fixture
 async def new_instance() -> P12Scraper:
+    """
+    Yields an uninitialized instance of P12Scraper and ensures its resources are released.
+    """
     p12scraper = P12Scraper()
     yield p12scraper
     await p12scraper.destroy()
@@ -15,6 +18,9 @@ async def new_instance() -> P12Scraper:
 
 @pytest.fixture
 async def new_initialized_instance(new_instance: P12Scraper) -> P12Scraper:
+    """
+    Returns an initialiazed new_instance.
+    """
     await new_instance.initialize_website_handler()
     return new_instance
 
