@@ -4,11 +4,10 @@ from pathlib import Path
 
 import pytest
 from pandas import DataFrame
-from sqlalchemy.orm import InstrumentedAttribute
 
 from source.classes.base_storage_manager import BaseStorageManager
-from source.classes.db_manager import DBManager
-from source.interfaces.db_tables import MatchingArticles
+from source.classes.db_manager import DBManager, RecordsMismatchException
+from source.interfaces.db_tables import MatchingArticles, CachedUserAgents
 
 
 def test_instance_success():
@@ -64,7 +63,7 @@ A Van Vechten no le gusta que en El pájaro azul, Maurice Maeterlinck –un aman
 El gato sobrevivirá porque “no es tan estúpido como el ser humano”. El libro de Van Vechten también emociona. “Feathers está muy cansada de este libro. Me lo ha dicho más de una vez. A veces mirándome con impaciencia mientras escribo. A veces con las patas, rascando con desdén las hojas de papel cuando las tiro al suelo. A veces, en mi mesa de trabajo, se interpone entre mis escritos y yo. Cuando empecé era una gatita, una bolita parecida a un crisantemo de pelo rojizo y rizado, naranja, blanco y negro, y ahora está a punto de convertirse en madre. Me hace sentir muy pequeño, muy poco importante (…) ¿Ves, Feathers?, estoy casi listo. Estoy escribiendo la última página. Puedes venir a mí ahora y pasar las horas en mi regazo”.""")]
     ),
 ])
-def test_basic_store_success(new_instance: DBManager, input_data: list[InstrumentedAttribute]):
+def test_basic_store_success(new_instance: DBManager, input_data: list[DBManager.Base]):
     new_instance.store(input_data)
     result = new_instance.retrieve(columns=[MatchingArticles.ID])
     assert len(result) > 0
@@ -90,7 +89,7 @@ def test_basic_store_success(new_instance: DBManager, input_data: list[Instrumen
             Body='El amor por los felinos no admite moderación. El fanatismo que suscitan, en todas las épocas y culturas, es una pasión desmesurada. ¿Acaso existen las pasiones cautelosas y prudentes? Cómo no acordar con esa frase que plantea que “Dios creó al gato para concedernos el placer de acariciar a un tigre”. Los agnósticos y ateos se rinden ante la evidencia de esta especie de religión felinesca. “Me encanta en el gato ese temperamento independiente y casi ingrato que le impide apegarse a cualquiera; la indiferencia con que pasa del salón al tejado. Cuando lo acaricias se estira y arquea el lomo, es cierto, pero lo hace por el placer físico y no, como el perro, por esa tonta satisfacción que siente en amar y serle fiel a un dueño que devuelve el cumplido a patadas –decía François-René de Chateaubriand–. El gato vive solo, no necesita de la sociedad, no obedece excepto cuando él quiere, finge dormitar para ver más claramente y araña todo lo que puede”. En El tigre en la casa. Una historia cultural del gato (Sigilo), originalmente publicado en 1920 y que tradujo por primera vez al español Andrea Palet, con dibujos de Krysthopher Woods, el genial escritor y fotógrafo estadounidense Carl Van Vechten despliega una erudición descomunal al explorar las representaciones del gato en la ficción, la poesía, la pintura, la música, el folclore, las leyes, la religión y la historia.')]
     ),
 ])
-def test_io_success(new_instance: DBManager, input_data: list[InstrumentedAttribute]):
+def test_io_success(new_instance: DBManager, input_data: list[DBManager.Base]):
     new_instance.store(input_data)
     result = new_instance.retrieve(table=MatchingArticles)
     for input_obj in input_data:
@@ -100,3 +99,64 @@ def test_io_success(new_instance: DBManager, input_data: list[InstrumentedAttrib
         assert input_obj.Author == result.Author.iloc[0]
         assert input_obj.ImageURL == result.ImageURL.iloc[0]
         assert input_obj.Body == result.Body.iloc[0]
+
+
+@pytest.mark.parametrize('input_data', [
+    pytest.param(
+        [
+            MatchingArticles(
+                URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
+                Title='Un manto de caracoles y un colibrí',
+                Date=datetime.datetime.fromisoformat('2025-02-13T01:14:20-03:00'),
+                Author='María Pia López',
+                ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-02/913013-colibri-afp2.jpg',
+                Body='“Promete un tiempo / en que la ferocidad no sea la única manera de tocarnos / los unos a los otros y dejarnos una huella. Y quién / no quiere esa promesa.”'
+            ),
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3',
+            ),
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1',
+            ),
+        ]
+    ),
+    pytest.param(
+        [
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3',
+            ),
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1',
+            ),
+            MatchingArticles(
+                URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
+                Title='En busca de la genealogía felina',
+                Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
+                Author='Silvina Friera',
+                ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2018-02/na31fo01_0.png',
+                Body='El amor por los felinos no admite moderación. El fanatismo que suscitan, en todas las épocas y culturas, es una pasión desmesurada. ¿Acaso existen las pasiones cautelosas y prudentes? Cómo no acordar con esa frase que plantea que “Dios creó al gato para concedernos el placer de acariciar a un tigre”. Los agnósticos y ateos se rinden ante la evidencia de esta especie de religión felinesca. “Me encanta en el gato ese temperamento independiente y casi ingrato que le impide apegarse a cualquiera; la indiferencia con que pasa del salón al tejado. Cuando lo acaricias se estira y arquea el lomo, es cierto, pero lo hace por el placer físico y no, como el perro, por esa tonta satisfacción que siente en amar y serle fiel a un dueño que devuelve el cumplido a patadas –decía François-René de Chateaubriand–. El gato vive solo, no necesita de la sociedad, no obedece excepto cuando él quiere, finge dormitar para ver más claramente y araña todo lo que puede”. En El tigre en la casa. Una historia cultural del gato (Sigilo), originalmente publicado en 1920 y que tradujo por primera vez al español Andrea Palet, con dibujos de Krysthopher Woods, el genial escritor y fotógrafo estadounidense Carl Van Vechten despliega una erudición descomunal al explorar las representaciones del gato en la ficción, la poesía, la pintura, la música, el folclore, las leyes, la religión y la historia.'
+            ),
+        ]
+    ),
+    pytest.param(
+        [
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1',
+            ),
+            MatchingArticles(
+                URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
+                Title='En busca de la genealogía felina',
+                Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
+                Author='Silvina Friera',
+                ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2018-02/na31fo01_0.png',
+                Body='El amor por los felinos no admite moderación. El fanatismo que suscitan, en todas las épocas y culturas, es una pasión desmesurada. ¿Acaso existen las pasiones cautelosas y prudentes? Cómo no acordar con esa frase que plantea que “Dios creó al gato para concedernos el placer de acariciar a un tigre”. Los agnósticos y ateos se rinden ante la evidencia de esta especie de religión felinesca. “Me encanta en el gato ese temperamento independiente y casi ingrato que le impide apegarse a cualquiera; la indiferencia con que pasa del salón al tejado. Cuando lo acaricias se estira y arquea el lomo, es cierto, pero lo hace por el placer físico y no, como el perro, por esa tonta satisfacción que siente en amar y serle fiel a un dueño que devuelve el cumplido a patadas –decía François-René de Chateaubriand–. El gato vive solo, no necesita de la sociedad, no obedece excepto cuando él quiere, finge dormitar para ver más claramente y araña todo lo que puede”. En El tigre en la casa. Una historia cultural del gato (Sigilo), originalmente publicado en 1920 y que tradujo por primera vez al español Andrea Palet, con dibujos de Krysthopher Woods, el genial escritor y fotógrafo estadounidense Carl Van Vechten despliega una erudición descomunal al explorar las representaciones del gato en la ficción, la poesía, la pintura, la música, el folclore, las leyes, la religión y la historia.'
+            ),
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3',
+            ),
+        ]
+    ),
+])
+def test_store_failure(new_instance: DBManager, input_data: list[DBManager.Base]):
+    with pytest.raises(RecordsMismatchException):
+        new_instance.store(input_data)

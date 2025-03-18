@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Optional
 
 import pandas
 from pandas import DataFrame
@@ -8,6 +9,10 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import declarative_base, sessionmaker, InstrumentedAttribute
 
 from source.classes.base_storage_manager import BaseStorageManager
+
+
+class RecordsMismatchException(Exception):
+    pass
 
 
 class DBManager(BaseStorageManager):
@@ -35,10 +40,18 @@ class DBManager(BaseStorageManager):
                     del record_dict[autofill_field_name]
             return record_dict
 
+        def type_check_contents(values: Sequence, expected_type: type) -> bool:
+            if len(values) > 0 and all(map(lambda value: (isinstance(value, expected_type)), values)):
+                return True
+            else:
+                return False
+
         if len(records) == 0:
             return
 
         table = records[0].__class__
+        if not type_check_contents(values=records, expected_type=table):
+            raise RecordsMismatchException('All records must belong to the same table.')
 
         with self.__session.begin() as session:
             record_dicts = list(map(record_as_dict, records))

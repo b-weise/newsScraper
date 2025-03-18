@@ -17,3 +17,11 @@ class MatchingArticles(DBManager.Base):
     Body = mapped_column(TEXT)
     CreatedOn = mapped_column(DATETIME, default=datetime.now)
     UpdatedOn = mapped_column(DATETIME, default=datetime.now, onupdate=datetime.now)
+
+
+class CachedUserAgents(DBManager.Base):
+    __tablename__ = 'CachedUserAgents'
+    ID = mapped_column(INTEGER, primary_key=True)
+    UserAgent = mapped_column(TEXT, nullable=False)
+    CreatedOn = mapped_column(DATETIME, default=datetime.now)
+    UpdatedOn = mapped_column(DATETIME, default=datetime.now, onupdate=datetime.now)
