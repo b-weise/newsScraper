@@ -23,14 +23,16 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         self.__non_breaking_space_char = non_breaking_space_char
         self.__throttling_chunk_size = throttling_chunk_size
 
-    async def initialize_website_handler(self):
+    async def initialize_website_handler(self, headless: bool = True, default_timeout_sec: int = 5,
+                                         default_navigation_timeout_sec: int = 25):
         """
         Initializes WebsiteHandler and sets up host's robots.txt.
         Must be called externally as __init__() cannot invoke asynchronous methods.
         Destroys any existing instance when invoked.
         """
         await self.destroy()
-        self._wshandler = WebsiteHandler()
+        self._wshandler = WebsiteHandler(headless=headless, default_timeout_sec=default_timeout_sec,
+                                         default_navigation_timeout_sec=default_navigation_timeout_sec)
         await self._wshandler.initialize_random_useragent_context()
         await self._wshandler.setup_robots_compliance(self._host)
 

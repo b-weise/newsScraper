@@ -12,8 +12,8 @@ class P12Scraper(BaseNewsScraper):
     """
     Implements all abstract methods from BaseNewsScraper with logic specific to pagina12.com.ar.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, throttling_chunk_size: int = 5):
+        super().__init__(throttling_chunk_size=throttling_chunk_size)
         self._host = 'https://www.pagina12.com.ar/'
 
     async def get_title(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
