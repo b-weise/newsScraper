@@ -2,7 +2,6 @@
 .ipynb_checkpoints
 .nix-shell-inputs
 __pycache__
-requirements.txt
 shell.nix
 *.swp
 .venv

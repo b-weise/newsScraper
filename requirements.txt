@@ -1,0 +1,6 @@
+pandas
+playwright
+psycopg2-binary
+pytest
+pytest-asyncio
+sqlalchemy
