@@ -8,5 +8,5 @@ class BaseStorageManager(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def retrieve(self):
+    def retrieve(self, *args, **kwargs):
         pass
