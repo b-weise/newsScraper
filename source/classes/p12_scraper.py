@@ -70,18 +70,12 @@ class P12Scraper(BaseNewsScraper):
 
     async def search(self, keyword: str, case_sensitive: bool = False,
                      do_throttle: bool = True) -> list[dict[str, str]]:
-        self._check_website_handler_instance()
-        url_scheme, url_hostname, _, _, _, _ = list(urlparse(self._host))
-
         def build_search_url():
             sanitized_keyword = quote(keyword)
             url_path = '/buscar'
             url_query = f'q={sanitized_keyword}'
             full_url = str(urlunparse([url_scheme, url_hostname, url_path, '', url_query, '']))
             return full_url
-
-        search_url = build_search_url()
-        await self._navigate_if_necessary(search_url)
 
         async def get_paths():
             articles_paths = []
@@ -92,9 +86,6 @@ class P12Scraper(BaseNewsScraper):
                 articles_paths.append(url_href)
             return articles_paths
 
-        articles_urls = list(map(lambda path: str(urlunparse([url_scheme, url_hostname, path, '', '', ''])),
-                                 await get_paths()))
-
         async def check_environment_hook(page: Page, article_scraper: Callable) -> Iterable[str] | None:
             try:
                 await expect(page.locator('article.live-blog-post').first).to_be_attached(attached=False)
@@ -104,9 +95,6 @@ class P12Scraper(BaseNewsScraper):
             else:
                 # Non-live article: scrap it
                 return await article_scraper(page)
-
-        scraped_candidates = await self._gather_articles(articles_urls=articles_urls, do_throttle=do_throttle,
-                                                         check_environment_hook=check_environment_hook)
 
         def search_for_keyword() -> list[dict[str, str]]:
             search_token = keyword
@@ -121,6 +109,18 @@ class P12Scraper(BaseNewsScraper):
                 if search_token in search_space:
                     matches.append(candidate)
             return matches
+
+        self._check_website_handler_instance()
+        url_scheme, url_hostname, _, _, _, _ = list(urlparse(self._host))
+
+        search_url = build_search_url()
+        await self._navigate_if_necessary(search_url)
+
+        articles_urls = list(map(lambda path: str(urlunparse([url_scheme, url_hostname, path, '', '', ''])),
+                                 await get_paths()))
+
+        scraped_candidates = await self._gather_articles(articles_urls=articles_urls, do_throttle=do_throttle,
+                                                         check_environment_hook=check_environment_hook)
 
         matching_articles = search_for_keyword()
 

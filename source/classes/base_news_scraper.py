@@ -53,16 +53,23 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
 
     async def _gather_articles(self, articles_urls: list[str], check_environment_hook: Optional[Callable] = None,
                                do_throttle: bool = True) -> list[dict[str, str] | None]:
-        async def scrap_article(article_url) -> dict[str, str] | None:
-            new_page = await self._wshandler.get_new_page(article_url)
-            pages.append(new_page)
+        def split_in_chunks() -> list[list[str]]:
+            chunk_size = self.__throttling_chunk_size
+            chunks_container = []
+            for index in range(0, len(articles_urls), chunk_size):
+                chunks_container.append(articles_urls[index:index + chunk_size])
+            return chunks_container
 
+        async def scrap_article(article_url) -> dict[str, str] | None:
             async def article_scraper(page: Page) -> Iterable[str]:
                 return await asyncio.gather(self.get_title(page=page),
                                             self.get_date(page=page),
                                             self.get_author(page=page),
                                             self.get_image_url(page=page),
                                             self.get_body(page=page))
+
+            new_page = await self._wshandler.get_new_page(article_url)
+            pages.append(new_page)
 
             if check_environment_hook is None:
                 scraping_results = await article_scraper(new_page)
@@ -79,13 +86,6 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
                                    'body': scraping_results[4]}
 
             return scraped_article
-
-        def split_in_chunks() -> list[list[str]]:
-            chunk_size = self.__throttling_chunk_size
-            chunks_container = []
-            for index in range(0, len(articles_urls), chunk_size):
-                chunks_container.append(articles_urls[index:index + chunk_size])
-            return chunks_container
 
         urls_chunks_container = []
         if do_throttle:
