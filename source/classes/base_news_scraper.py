@@ -20,10 +20,6 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
         self.__non_breaking_space_char = non_breaking_space_char
         self.__throttling_chunk_size = throttling_chunk_size
 
-    @property
-    def host(self):
-        return self._host
-
     async def initialize_website_handler(self):
         await self.destroy()
         self._wshandler = WebsiteHandler()
@@ -35,12 +31,9 @@ class BaseNewsScraper(metaclass=abc.ABCMeta):
             raise UninitializedWebsiteHandler(
                 'WebsiteHandler is not initialized. Call the "initialize_website_handler" method first.')
 
-    async def _navigate_if_necessary(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
-        if url is None:
-            url = self._wshandler.page.url
-        elif url != self._wshandler.page.url:
+    async def _navigate_if_necessary(self, url: Optional[str] = None, page: Optional[Page] = None):
+        if url is not None and url != self._wshandler.page.url:
             await self._wshandler.safe_goto(url=url, page=page)
-        return url
 
     def _sanitize_text(self, raw_text_block: str) -> str:
         raw_text_lines = raw_text_block.split('\n')
