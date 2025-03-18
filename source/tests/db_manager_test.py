@@ -40,6 +40,7 @@ def test_basic_retrieve_success(new_instance: DBManager):
 @pytest.mark.parametrize('input_data', [
     pytest.param(
         [MatchingArticles(
+            Keyword='genealogistas',
             URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
             Title='Un manto de caracoles y un colibrí',
             Date=datetime.datetime.fromisoformat('2025-02-13T01:14:20-03:00'),
@@ -49,6 +50,7 @@ def test_basic_retrieve_success(new_instance: DBManager):
     ),
     pytest.param(
         [MatchingArticles(
+            Keyword='genealogistas',
             URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
             Title='En busca de la genealogía felina',
             Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
@@ -72,6 +74,7 @@ def test_basic_store_success(new_instance: DBManager, input_data: list[DBManager
 @pytest.mark.parametrize('input_data', [
     pytest.param(
         [MatchingArticles(
+            Keyword='genealogistas',
             URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
             Title='Un manto de caracoles y un colibrí',
             Date=datetime.datetime.fromisoformat('2025-02-13T01:14:20-03:00'),
@@ -81,6 +84,7 @@ def test_basic_store_success(new_instance: DBManager, input_data: list[DBManager
     ),
     pytest.param(
         [MatchingArticles(
+            Keyword='genealogistas',
             URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
             Title='En busca de la genealogía felina',
             Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
@@ -91,6 +95,7 @@ def test_basic_store_success(new_instance: DBManager, input_data: list[DBManager
     pytest.param(
         [
             MatchingArticles(
+                Keyword='genealogistas',
                 URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
                 Title='Un manto de caracoles y un colibrí',
                 Date=datetime.datetime.fromisoformat('2025-02-13T01:14:20-03:00'),
@@ -98,6 +103,7 @@ def test_basic_store_success(new_instance: DBManager, input_data: list[DBManager
                 ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-02/913013-colibri-afp2.jpg',
                 Body='“Promete un tiempo / en que la ferocidad no sea la única manera de tocarnos / los unos a los otros y dejarnos una huella. Y quién / no quiere esa promesa.”'),
             MatchingArticles(
+                Keyword='genealogistas',
                 URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
                 Title='En busca de la genealogía felina',
                 Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
@@ -142,6 +148,7 @@ def test_cached_useragents_io_success(new_instance: DBManager, input_data: list[
     pytest.param(
         [
             MatchingArticles(
+                Keyword='genealogistas',
                 URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
                 Title='Un manto de caracoles y un colibrí',
                 Date=datetime.datetime.fromisoformat('2025-02-13T01:14:20-03:00'),
@@ -166,6 +173,7 @@ def test_cached_useragents_io_success(new_instance: DBManager, input_data: list[
                 UserAgent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1',
             ),
             MatchingArticles(
+                Keyword='genealogistas',
                 URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
                 Title='En busca de la genealogía felina',
                 Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
@@ -181,6 +189,7 @@ def test_cached_useragents_io_success(new_instance: DBManager, input_data: list[
                 UserAgent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1',
             ),
             MatchingArticles(
+                Keyword='genealogistas',
                 URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
                 Title='En busca de la genealogía felina',
                 Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),

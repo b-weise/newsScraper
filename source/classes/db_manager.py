@@ -29,17 +29,8 @@ class DBManager(BaseStorageManager):
         self.__engine = create_engine(f'sqlite:///{str(filepath)}')
         self.__session = sessionmaker(self.__engine)
         DBManager.Base.metadata.create_all(bind=self.__engine)
-        pass
 
     def store(self, records: Sequence[Base]):
-        def record_as_dict(record):
-            record_dict = {col.name: getattr(record, col.name)
-                           for col in record.__table__.columns}
-            for autofill_field_name in self.__record_autofill_field_names:
-                if autofill_field_name in record_dict:
-                    del record_dict[autofill_field_name]
-            return record_dict
-
         def type_check_contents(values: Sequence, expected_type: type) -> bool:
             if len(values) > 0 and all(map(lambda value: (isinstance(value, expected_type)), values)):
                 return True
@@ -48,6 +39,14 @@ class DBManager(BaseStorageManager):
 
         if len(records) == 0:
             return
+
+        def record_as_dict(record):
+            record_dict = {col.name: getattr(record, col.name)
+                           for col in record.__table__.columns}
+            for autofill_field_name in self.__record_autofill_field_names:
+                if autofill_field_name in record_dict:
+                    del record_dict[autofill_field_name]
+            return record_dict
 
         table = records[0].__class__
         if not type_check_contents(values=records, expected_type=table):
