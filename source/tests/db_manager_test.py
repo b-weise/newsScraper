@@ -122,6 +122,25 @@ def test_matching_articles_io_success(new_instance: DBManager, input_data: list[
 @pytest.mark.parametrize('input_data', [
     pytest.param(
         [
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3',
+            ),
+            CachedUserAgents(
+                UserAgent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.1',
+            ),
+        ]
+    ),
+])
+def test_cached_useragents_io_success(new_instance: DBManager, input_data: list[DBManager.Base]):
+    new_instance.store(input_data)
+    result = new_instance.retrieve(table=CachedUserAgents)
+    for index in range(len(input_data)):
+        assert input_data[index].UserAgent == result.UserAgent.iloc[index]
+
+
+@pytest.mark.parametrize('input_data', [
+    pytest.param(
+        [
             MatchingArticles(
                 URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
                 Title='Un manto de caracoles y un colibrí',
