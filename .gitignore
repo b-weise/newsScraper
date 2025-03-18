@@ -4,6 +4,5 @@
 __pycache__
 requirements.txt
 shell.nix
-storage
 *.swp
 .venv
