@@ -47,9 +47,11 @@ class DBManager(BaseStorageManager):
             session.execute(ignore_duplicates_stmt)
             session.commit()
 
-    def retrieve(self, columns: Sequence[InstrumentedAttribute]) -> DataFrame:
+    def retrieve(self, columns: Optional[Sequence[InstrumentedAttribute]] = None,
+                 table: Optional[Base] = None) -> DataFrame:
+        query_object = columns or [table]
         with self.__session.begin() as session:
-            query_result = session.query(*columns)
+            query_result = session.query(*query_object)
             pandas_result = pandas.read_sql(sql=query_result.statement, con=self.__engine)
             return pandas_result
 
