@@ -9,6 +9,7 @@ from source.classes.db_manager import DBManager
 class MatchingArticles(DBManager.Base):
     __tablename__ = 'MatchingArticles'
     ID = mapped_column(INTEGER, primary_key=True)
+    Keyword = mapped_column(TEXT, nullable=False)
     URL = mapped_column(TEXT, nullable=False)
     Title = mapped_column(TEXT)
     Date = mapped_column(DATETIME)
