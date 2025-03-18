@@ -4,7 +4,7 @@ import abc
 class BaseStorageManager(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
-    def store(self):
+    def store(self, *args, **kwargs):
         pass
 
     @abc.abstractmethod
