@@ -114,6 +114,10 @@ async def test_get_author_call_failure(new_instance: P12Scraper):
 
 
 @pytest.mark.parametrize('input_url,output_image_url', [
+    pytest.param('https://www.pagina12.com.ar/811360-ausencias',
+                 ''),
+    pytest.param('https://www.pagina12.com.ar/508228-inevitables',
+                 'https://images.pagina12.com.ar/styles/width960/public/2022-12/680089-teatro-2018-12.jpg'),
     pytest.param('https://www.pagina12.com.ar/800250-genealogistas',
                  'https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-01/907602-ro08fo0130web_0.jpg'),
     pytest.param('https://www.pagina12.com.ar/775639-el-futuro-de-la-ia-y-su-impacto-en-el-conocimiento-cambiara-',
