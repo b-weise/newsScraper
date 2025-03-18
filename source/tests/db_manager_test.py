@@ -88,17 +88,35 @@ def test_basic_store_success(new_instance: DBManager, input_data: list[DBManager
             ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2018-02/na31fo01_0.png',
             Body='El amor por los felinos no admite moderación. El fanatismo que suscitan, en todas las épocas y culturas, es una pasión desmesurada. ¿Acaso existen las pasiones cautelosas y prudentes? Cómo no acordar con esa frase que plantea que “Dios creó al gato para concedernos el placer de acariciar a un tigre”. Los agnósticos y ateos se rinden ante la evidencia de esta especie de religión felinesca. “Me encanta en el gato ese temperamento independiente y casi ingrato que le impide apegarse a cualquiera; la indiferencia con que pasa del salón al tejado. Cuando lo acaricias se estira y arquea el lomo, es cierto, pero lo hace por el placer físico y no, como el perro, por esa tonta satisfacción que siente en amar y serle fiel a un dueño que devuelve el cumplido a patadas –decía François-René de Chateaubriand–. El gato vive solo, no necesita de la sociedad, no obedece excepto cuando él quiere, finge dormitar para ver más claramente y araña todo lo que puede”. En El tigre en la casa. Una historia cultural del gato (Sigilo), originalmente publicado en 1920 y que tradujo por primera vez al español Andrea Palet, con dibujos de Krysthopher Woods, el genial escritor y fotógrafo estadounidense Carl Van Vechten despliega una erudición descomunal al explorar las representaciones del gato en la ficción, la poesía, la pintura, la música, el folclore, las leyes, la religión y la historia.')]
     ),
+    pytest.param(
+        [
+            MatchingArticles(
+                URL='https://www.pagina12.com.ar/803462-un-manto-de-caracoles-y-un-colibri',
+                Title='Un manto de caracoles y un colibrí',
+                Date=datetime.datetime.fromisoformat('2025-02-13T01:14:20-03:00'),
+                Author='María Pia López',
+                ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2025-02/913013-colibri-afp2.jpg',
+                Body='“Promete un tiempo / en que la ferocidad no sea la única manera de tocarnos / los unos a los otros y dejarnos una huella. Y quién / no quiere esa promesa.”'),
+            MatchingArticles(
+                URL='https://www.pagina12.com.ar/95749-en-busca-de-la-genealogia-felina',
+                Title='En busca de la genealogía felina',
+                Date=datetime.datetime.fromisoformat('2018-02-16T02:40:46-03:00'),
+                Author='Silvina Friera',
+                ImageURL='https://images.pagina12.com.ar/styles/focal_3_2_470x313/public/2018-02/na31fo01_0.png',
+                Body='El amor por los felinos no admite moderación. El fanatismo que suscitan, en todas las épocas y culturas, es una pasión desmesurada. ¿Acaso existen las pasiones cautelosas y prudentes? Cómo no acordar con esa frase que plantea que “Dios creó al gato para concedernos el placer de acariciar a un tigre”. Los agnósticos y ateos se rinden ante la evidencia de esta especie de religión felinesca. “Me encanta en el gato ese temperamento independiente y casi ingrato que le impide apegarse a cualquiera; la indiferencia con que pasa del salón al tejado. Cuando lo acaricias se estira y arquea el lomo, es cierto, pero lo hace por el placer físico y no, como el perro, por esa tonta satisfacción que siente en amar y serle fiel a un dueño que devuelve el cumplido a patadas –decía François-René de Chateaubriand–. El gato vive solo, no necesita de la sociedad, no obedece excepto cuando él quiere, finge dormitar para ver más claramente y araña todo lo que puede”. En El tigre en la casa. Una historia cultural del gato (Sigilo), originalmente publicado en 1920 y que tradujo por primera vez al español Andrea Palet, con dibujos de Krysthopher Woods, el genial escritor y fotógrafo estadounidense Carl Van Vechten despliega una erudición descomunal al explorar las representaciones del gato en la ficción, la poesía, la pintura, la música, el folclore, las leyes, la religión y la historia.'),
+        ]
+    ),
 ])
-def test_io_success(new_instance: DBManager, input_data: list[DBManager.Base]):
+def test_matching_articles_io_success(new_instance: DBManager, input_data: list[DBManager.Base]):
     new_instance.store(input_data)
     result = new_instance.retrieve(table=MatchingArticles)
-    for input_obj in input_data:
-        assert input_obj.URL == result.URL.iloc[0]
-        assert input_obj.Title == result.Title.iloc[0]
-        assert input_obj.Date.replace(tzinfo=None).isoformat() == result.Date.iloc[0].isoformat()
-        assert input_obj.Author == result.Author.iloc[0]
-        assert input_obj.ImageURL == result.ImageURL.iloc[0]
-        assert input_obj.Body == result.Body.iloc[0]
+    for index in range(len(input_data)):
+        assert input_data[index].URL == result.URL.iloc[index]
+        assert input_data[index].Title == result.Title.iloc[index]
+        assert input_data[index].Date.replace(tzinfo=None).isoformat() == result.Date.iloc[index].isoformat()
+        assert input_data[index].Author == result.Author.iloc[index]
+        assert input_data[index].ImageURL == result.ImageURL.iloc[index]
+        assert input_data[index].Body == result.Body.iloc[index]
 
 
 @pytest.mark.parametrize('input_data', [
