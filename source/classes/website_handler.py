@@ -20,13 +20,13 @@ class UninitializedPlaywright(Exception):
 class WebsiteHandler:
     def __init__(self, headless: bool = True, robots_useragent_key: str = 'user-agent',
                  robots_allow_key: str = 'allow', robots_disallow_key: str = 'disallow',
-                 default_timeout: int = 5, default_navigation_timeout: int = 15):
+                 default_timeout_sec: int = 5, default_navigation_timeout_sec: int = 25):
         self.__headless = headless
         self.__robots_useragent_key = robots_useragent_key
         self.__robots_allow_key = robots_allow_key
         self.__robots_disallow_key = robots_disallow_key
-        self.__default_timeout = default_timeout
-        self.__default_navigation_timeout = default_navigation_timeout
+        self.__default_timeout_sec = default_timeout_sec
+        self.__default_navigation_timeout_sec = default_navigation_timeout_sec
         self.__common_useragents_url = 'https://www.useragents.me/'
         self.__page = None
         self.__browser_context = None
@@ -47,8 +47,8 @@ class WebsiteHandler:
                 'Playwright is not initialized. Call the "initialize_playwright" method first.')
 
     def __setup_page(self, page: Page):
-        page.set_default_timeout(self.__default_timeout * 1000)
-        page.set_default_navigation_timeout(self.__default_navigation_timeout * 1000)
+        page.set_default_timeout(self.__default_timeout_sec * 1000)
+        page.set_default_navigation_timeout(self.__default_navigation_timeout_sec * 1000)
 
     @property
     def page(self):
@@ -64,8 +64,8 @@ class WebsiteHandler:
         def split_line(line: str) -> list[str]:
             return re.split(r'\s+', line)
 
-        def is_keyword_present(line: str, keyword: str) -> bool:
-            return re.match(f'^{keyword}', line, flags=re.I) is not None
+        def is_directive_present(directive: str, line: str) -> bool:
+            return re.match(f'^{directive}', line, flags=re.I) is not None
 
         useragent_key = self.__robots_useragent_key
         allow_key = self.__robots_allow_key
@@ -78,17 +78,17 @@ class WebsiteHandler:
         was_relevant_useragent_already_extracted = False
         for line in robots_content.split('\n'):
             line = line.strip()
-            if is_keyword_present(line, useragent_key):
+            if is_directive_present(useragent_key, line):
                 line_pieces = split_line(line)
                 line_pieces = line_pieces[1:]  # Discard keyword item
                 is_relevant_useragent_space = any(map(lambda token: token == '*', line_pieces))
             if is_relevant_useragent_space:
                 was_relevant_useragent_already_extracted = True
-                for keyword in [allow_key, disallow_key]:
-                    if is_keyword_present(line, keyword):
+                for directive in [allow_key, disallow_key]:
+                    if is_directive_present(directive, line):
                         line_pieces = split_line(line)
                         line_pieces = line_pieces[1:]  # Discard keyword item
-                        parsed_content[keyword] += line_pieces
+                        parsed_content[directive] += line_pieces
             if was_relevant_useragent_already_extracted and not is_relevant_useragent_space:
                 break
         return parsed_content
