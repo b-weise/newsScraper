@@ -52,11 +52,24 @@ class P12Scraper(BaseNewsScraper):
         self._check_website_handler_instance()
         page = page or self._wshandler.page
         await self._navigate_if_necessary(url=url, page=page)
-        main_image_div = page.locator('div.article-main-image')
-        image_img = main_image_div.locator('img')
-        image_src = await image_img.get_attribute('src')
-        url_scheme, url_hostname, url_path, _, _, _ = list(urlparse(image_src))
-        image_url = str(urlunparse([url_scheme, url_hostname, url_path, '', '', '']))
+        image_url = ''
+        try:
+            main_image_div = None
+            image_img = None
+            image_src = None
+            try:
+                main_image_div = page.locator('div.article-main-image')
+                image_img = main_image_div.locator('img')
+                image_src = await image_img.get_attribute('src')
+            except PWTimeoutError:
+                # Some articles lack a main image
+                main_image_div = page.locator('div.no-main-image')
+                image_img = main_image_div.locator('img').first
+                image_src = await image_img.get_attribute('src')
+            url_scheme, url_hostname, url_path, _, _, _ = list(urlparse(image_src))
+            image_url = str(urlunparse([url_scheme, url_hostname, url_path, '', '', '']))
+        except PWTimeoutError:
+            pass  # Others have no images at all, so this exception is silenced
         return image_url
 
     async def get_body(self, url: Optional[str] = None, page: Optional[Page] = None) -> str:
@@ -93,7 +106,7 @@ class P12Scraper(BaseNewsScraper):
                 # Live article: ignore it
                 return None
             else:
-                # Non-live article: scrap it
+                # Non-live article: scrape it
                 return await article_scraper(page)
 
         def search_for_keyword() -> list[dict[str, str]]:
